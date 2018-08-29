@@ -2,7 +2,7 @@
 
 Put: 
 
-#+BEFIN_SRC lisp
+#+BEGIN_SRC lisp
 (load-module "ratcontrol")
 (ratcontrol-initialize your-monitor's-x-resolution your-monitor's-y-resolution)
 #+END_SRC
