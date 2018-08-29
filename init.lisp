@@ -26,10 +26,11 @@
 (run-shell-command "setxkbmap -option ctrl:swapcaps")
 
 (set-module-dir "/home/shos/.stumpwm.d/module-addons/")
-;(init-load-path "/home/shos/.stumpwm.d/translation-keys")
+;; (init-load-path "/home/shos/.stumpwm.d/translation-keys")
+(add-to-load-path "~/.stumpwm.d/custom-modules/")
 
-;; ;; initialize our module directory. stumpwm defualts to 
-;; ;; (init-load-path "/home/shos/.stumpwm.d/contrib/")
+;; initialize our module directory. stumpwm defualts to 
+;; (init-load-path "/home/shos/.stumpwm.d/contrib/")
 (load-module :translation-keys)
 
 (translation-keys:define-key-translations "vlc"
@@ -279,9 +280,8 @@
 
 ;; (ql:quickload :swank)
 ;; load swank to connect via emacs
-(when *initializing*
-  (require :swank)
-  (swank-loader:init)
-  (swank:create-server :port 4006
-		       :style swank:*communication-style*
-		       :dont-close t))
+(require :swank)
+(swank-loader:init)
+(swank:create-server :port 4006
+		     :style swank:*communication-style*
+		     :dont-close t)
