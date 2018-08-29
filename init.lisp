@@ -279,10 +279,11 @@
 
 ;; (ql:quickload :swank)
 ;; load swank to connect via emacs
-(require :swank)
+(when *initializing*
+  (require :swank)
 
-(swank-loader:init)
+  (swank-loader:init)
 
-(swank:create-server :port 4006
-		     :style swank:*communication-style*
-		     :dont-close t)
+  (swank:create-server :port 4006
+		       :style swank:*communication-style*
+		       :dont-close t))

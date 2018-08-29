@@ -22,7 +22,8 @@ this lets you create hydras for related behavior. "
   ((kbd "n") "notes")
   ((kbd "f") "access-floats")
   ((kbd "F") "access-floats-global")
-  ((kbd "q") "sys-maniper"))
+  ((kbd "m") "sys-maniper")
+  ((kbd "q") "meta q"))
 
 (defcommand sys-maniper () ()
   (system-manipulation)
