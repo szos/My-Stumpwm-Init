@@ -32,16 +32,20 @@
   (cadr (stumpwm:select-from-menu (stumpwm:current-screen) menu-list)))
 
 (stumpwm:defcommand translation-keys-help () ()
-  (stumpwm:message
+  (eval
    (menu-select-cadr 
-    `(("Active Key Simulations" ,*help*)
+    `(("deactivate" (stumpwm:message (unbind-keyset (gethash
+						     (gethash :last-binding *keysets*)
+						     *keysets*))))
+      ("Active Key Simulations" (stumpwm:message ,*help*))
       ("Simulated Applications" 
-       ,(let ((hash-printer "Applications with Simulated Keys:~%"))
-	  (maphash #'(lambda (key value)
-                       (declare (ignore value))
-		       (setf hash-printer (concatenate 'string hash-printer (format nil "=> ~S~%" key))))
-		   *keysets*)
-	  hash-printer))))))
+       (stumpwm:message
+	,(let ((hash-printer "Applications with Simulated Keys:~%"))
+	   (maphash #'(lambda (key value)
+			(declare (ignore value))
+			(setf hash-printer (concatenate 'string hash-printer (format nil "=> ~S~%" key))))
+		    *keysets*)
+	   hash-printer)))))))
 
 (defun hangar (cwin lwin)
   (declare (ignore lwin))
