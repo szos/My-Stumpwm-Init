@@ -233,9 +233,4 @@ C-m-------Toggle Modeline and Stumptray
 M-t------------Cycle Screen Temperature
 C-h----------------------This Help Menu"))
 
-;;; put some windowlist class commands here:
 
-(defcommand list-browsers-all () ()
-  (list-instance ((:class "Firefox") (:class "Icecat") 
-		  (:class "Conkeror") (:role "Web Browser")) 
-		 t t))

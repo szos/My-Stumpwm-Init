@@ -51,25 +51,6 @@ multiple matches, generate a window list"
   (windowlist "%n%s%c => %t" (custom-flatten (loop for x in props
 						collect (run-raise-list x all-groups all-screens)))))
 
-(defmacro list-instance (props &optional (all-groups *run-or-raise-all-groups*)
-				 (all-screens *run-or-raise-all-screens*)
-				 (base 0))
-  (when props       
-       `(let ((property-match (append (find-matching-windows ',(car props) ,all-groups ,all-screens)
-				     (list-instance ,(rest props) ,all-groups ,all-screens 
-						    ,(+ base 1)))))
-	 (when (eq ,base 0) (windowlist "%n%s%c => %t" property-match))
-	 property-match)))
-
-(defun run-pull-or-list (props &optional (fmt *window-format*) (all-groups *run-or-raise-all-groups*)
-				 (all-screens *run-or-raise-all-screens*))
-  "When sent a list of properties like ((:class \"Emacs\") (:class \"Firefox\")) it will grab a list of windows, reformat said list to make it readable by select-from-menu, pull the window selected, and finally return the window we pulled."
-  (let ((matches (custom-flatten (loop for x in props
-				    collect (find-matching-windows x all-groups all-screens)))))
-    (let ((window (select-window-from-menu matches fmt)))
-      (pull-window window)
-      window)))
-
 (defcommand my-pull-menu () ()
   (labels ((pick-and-pull (windows)
 	     (let ((selection (select-from-menu (current-screen) windows "")))
@@ -78,31 +59,10 @@ multiple matches, generate a window list"
 						collect (run-raise-list x all-groups all-screens)))))
       (pick-and-pull corral))))
 
-(defun run-pull-or-list-tester (cmd props &optional (all-groups *run-or-raise-all-groups*)
-					    (all-screens *run-or-raise-all-screens*))
-  (labels
-      ((grab-win (win)
-	 (let* ((group (window-group win))
-		(frame (window-frame win)))
-	   (pull-window win))))
-    (let ((matches (find-matching-windows props all-groups all-screens)))
-      (case (length matches)
-	(0 (run-shell-command cmd))
-	(1 (pull-window (car matches)))
-	(t (windowlist-pull "%n%s%i => %t" matches))))))
-
 ;; make a new windowlist that just returns a window, nothing more. 
 
 ;;;; redefine everything above, refactored of course.
-;;; THE NAME run-prog CONFLICTS WITH THE STUMPWM INTERNAL FUNCTION RUN-PROG. 
-(defun stump-usr-run-prog (cmd props &optional (fmt *window-format*)
-				       (all-groups *run-or-raise-all-groups*)
-    				       (all-screens *run-or-raise-all-screens*))
-  "if the user aborts the selection process, run the program, otherwise return the window. "
-  (let ((win (fuzzy-finder props fmt all-groups all-screens)))
-    (if (not win)
-	(run-shell-command cmd)
-	win)))
+;;; THE NAME run-prog CONFLICTS WITH THE STUMPWM INTERNAL FUNCTION RUN-PROG.
 
 ;; (defun run-or-list (cmd props &optional (all-groups *run-or-raise-all-groups*)
 ;;     				      (all-screens *run-or-raise-all-screens*))
@@ -112,7 +72,7 @@ multiple matches, generate a window list"
     				      (all-screens *run-or-raise-all-screens*))
   "see if the props bring anything, if not run cmd."
   (if-let ((match (fuzzy-finder props *window-format* all-groups all-screens)))
-      (focus-all match)
+    (focus-all match)
     (run-shell-command cmd)))
 
 (defun run-or-pull-or-list (cmd props &optional (all-groups *run-or-raise-all-groups*)
@@ -121,16 +81,6 @@ multiple matches, generate a window list"
   (if-let ((match (fuzzy-finder props *window-format* all-groups all-screens)))
     (pull match)
     (run-shell-command cmd)))
-
-(defun my-run-pull-list-tester (cmd props &optional (all-groups *run-or-raise-all-groups*)
-    					    (all-screens *run-or-raise-all-screens*))
-  "see if the props bring anything, if not run cmd."
-  (if-let ((match (fuzzy-finder props *window-format* all-groups all-screens)))
-    (pull match)
-    (run-shell-command cmd)))
-
-;; (my-run-pull-list-tester "firefox https://youtube.com" '((:title "YouTube") (:class "Firefox")))
-
 ;; end
 
 (define-interactive-keymap gnext-map (:on-enter #'gnext) 
@@ -143,10 +93,6 @@ multiple matches, generate a window list"
 ;; tracks the status of the mode line to ensure stumptray is safely enabled and disabled. 
 ;; mode line is off --- 0
 ;; mode line is on ---- 1
-
-(defcommand rathelp () ()
-  (message "C-M-h::Help"))
-
 
 ;;; command to list fonts in xtf::*font-cache*
 (defcommand list-ttf-fonts () ()
@@ -193,14 +139,6 @@ multiple matches, generate a window list"
 	   hold))))
 
 
-(defcommand g-w-select () ()
-  "a wrapper for select-window-from-groups that calls vgroups"
-  (vgroups)
-  (let ((group (read-line))
-	(window (read-line)))
-    (gselect group)
-    (windowlist window)))
-
 (defcommand balanced-remove-split () ()
   (let ((win (current-window)))
     (remove-split)
@@ -209,14 +147,13 @@ multiple matches, generate a window list"
 
 (defcommand frames-tester () ()
   (let ((frames (group-frames (current-group))))
-    
     (message "~S~%~%~S" (cadr frames) (length frames))))
 
 ;;; Set up commands to grab floating windows that I've generated with
 ;;; with-open-window and float-in-tiles. its required for them to be listed.
 (defcommand access-floats () ()
   "looks for windows floated with the (with-open-window... #'float-in-tiles)"
-  (when-let ((win (fuzzy-finder '((:class "FLOAT")) *window-format* nil nil)))
+  (when-let ((win (fuzzy-finder '((:class "|FLOAT|")) *window-format* nil nil)))
     (eval (cadr (select-from-menu (current-screen)
 				  `(("raise" (raise ,win))
 				    ("focus" (focus-all ,win))
@@ -224,7 +161,7 @@ multiple matches, generate a window list"
 (defcommand access-floats-global () ()
   "looks for windows floated with the (with-open-window... #'float-in-tiles) 
 based on users global settings"
-  (when-let ((win (fuzzy-finder '((:class "FLOAT")))))
+  (when-let ((win (fuzzy-finder '((:class "|FLOAT|")) *window-format* t t)))
     (eval (cadr (select-from-menu (current-screen)
 				  `(("raise" (raise ,win))
 				    ("focus" (focus-all ,win))
@@ -331,7 +268,7 @@ based on users global settings"
   (run-raise-or-list "deluge" '(:class "Torrent Client")))
 
 (defcommand term () ()
-  (run-pull-or-list-tester "cool-retro-term" '(:class "cool-retro-term")))
+  (raise (fuzzy-finder '((:class "cool-retro-term")))))
 (defcommand term-new () ()
   (run-shell-command "cool-retro-term"))
 
@@ -405,9 +342,32 @@ based on users global settings"
 					  :height 400
 					  :x 10
 					  :y 70)
-			  (meta (kbd "M->"))
-			  (meta (kbd "C-x"))
-			  (meta (kbd "1"))))))
+			  (meta (kbd "M-x"))
+			  (window-send-string "enable-notes" cwin)
+			  (meta (kbd "RET"))))))
+
+
+(defcommand floating-resize (w h) ((:number "W: ")
+				   (:number "H: "))
+  (let* ((win (if (search "|FLOAT|" (window-class (current-window)))
+		  (current-window)
+		  (fuzzy-finder '((:class "|FLOAT|")))))
+	 (old-x (window-x win))
+	 (old-y (window-y win)))
+    (float-window-move-resize win :x 0 :y 0 :width w :height h)
+    (run-with-timer .1 nil #'(lambda ()
+			       (float-window-move-resize win
+							 :x old-x :y old-y
+							 :width w :height h)))))
+
+;; (float-window-move-resize (current-window) :x old-x :y old-y)
+
+(defun multi-meta (strings)
+  (if (kbd (car strings))
+      (meta (kbd (car strings)))
+      (window-send-string (car strings)))
+  (when (cdr strings)
+    (multi-meta (cdr strings))))
 
 (defcommand portacle-instance () ()
   (with-open-window "sh /home/shos/LISP/portacle/portacle.run" "Emacs" #'reclassify-window "Portacle"))
