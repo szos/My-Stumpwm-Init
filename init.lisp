@@ -25,7 +25,7 @@
 ;; ;;swap caps and ctrl
 (run-shell-command "setxkbmap -option ctrl:swapcaps")
 
-(set-module-dir "/home/shos/.stumpwm.d/module-addons/")
+;; (set-module-dir "/home/shos/.stumpwm.d/module-addons/")
 ;; (init-load-path "/home/shos/.stumpwm.d/translation-keys")
 (add-to-load-path "~/.stumpwm.d/custom-modules/")
 
