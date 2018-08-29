@@ -213,7 +213,7 @@ multiple matches, generate a window list"
     (message "~S~%~%~S" (cadr frames) (length frames))))
 
 ;;; Set up commands to grab floating windows that I've generated with
-;;; with-open-window and float-in-tiles. its required for them to be listed. 
+;;; with-open-window and float-in-tiles. its required for them to be listed.
 (defcommand access-floats () ()
   "looks for windows floated with the (with-open-window... #'float-in-tiles)"
   (when-let ((win (fuzzy-finder '((:class "FLOAT")) *window-format* nil nil)))

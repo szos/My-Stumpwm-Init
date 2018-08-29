@@ -26,7 +26,7 @@
 (run-shell-command "setxkbmap -option ctrl:swapcaps")
 
 (set-module-dir "/home/shos/.stumpwm.d/module-addons/")
-;(init-load-path "/home/shos/.stumpwm.d/module-addons/")
+;(init-load-path "/home/shos/.stumpwm.d/translation-keys")
 
 ;; ;; initialize our module directory. stumpwm defualts to 
 ;; ;; (init-load-path "/home/shos/.stumpwm.d/contrib/")
@@ -281,9 +281,7 @@
 ;; load swank to connect via emacs
 (when *initializing*
   (require :swank)
-
   (swank-loader:init)
-
   (swank:create-server :port 4006
 		       :style swank:*communication-style*
 		       :dont-close t))
