@@ -1,6 +1,5 @@
 /ratcontrol/README.org~
 *.fasl
 *~
-/ratcontrol/
-/translation-keys/
+translation-keys/
 ratcontrol/
