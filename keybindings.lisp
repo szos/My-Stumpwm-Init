@@ -19,6 +19,7 @@ this lets you create hydras for related behavior. "
 	 m))))
 
 (define-hydra *top-map* (kbd "C-q")
+  ((kbd "l") "slimeball")
   ((kbd "n") "notes")
   ((kbd "f") "access-floats")
   ((kbd "F") "access-floats-global")

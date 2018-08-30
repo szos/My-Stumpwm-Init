@@ -327,7 +327,36 @@ based on users global settings"
 								   "mouse-notes"
 								   :width 540
 								   :height 400))))
-
+(defcommand slimeball () ()
+  (if-let ((win (fuzzy-finder '((:class "|FLOAT|Slimeball")))))
+    (if (eq (window-group win) (current-group))
+	(raise win)
+	(eval (second (select-from-menu (current-screen)
+					`(("Jump to Slimeball" (raise ,win))
+					  ("Stay Here" nil))))))
+    (with-open-window "emacs" nil
+		      #'(lambda (cwin)
+			  (float-in-tiles cwin
+					  :new-class "Slimeball"
+					  :width 540
+					  :height 400
+					  :x 10
+					  :y 70)
+			  (meta (kbd "M-x"))
+			  (window-send-string "menu-bar-mode")
+			  (meta (kbd "RET"))
+			  (meta (kbd "M-x"))
+			  (window-send-string "slime-connect" cwin)
+			  (meta (kbd "RET"))
+			  (meta (kbd "RET"))
+			  (meta (kbd "DEL"))
+			  (window-send-string "6" cwin)
+			  (meta (kbd "RET"))
+			  (run-with-timer 3 nil #'(lambda ()
+						    (window-send-string "(in-package :stumpwm)" cwin)
+						    (meta (kbd "RET"))
+						    (meta (kbd "C-x"))
+						    (meta (kbd "1"))))))))
 (defcommand notes () ()
   (if-let ((win (fuzzy-finder '((:class "|FLOAT|Notes")))))
     (if (eq (window-group win) (current-group))
@@ -346,6 +375,42 @@ based on users global settings"
 			  (window-send-string "enable-notes" cwin)
 			  (meta (kbd "RET"))))))
 
+(defun mounting (p mp pwd)
+  (with-open-window "cool-retro-term" nil
+		    #'(lambda (cwin)
+			(window-send-string
+			 (concatenate 'string  "sudo mount " p " "
+				      mp)
+			 cwin)
+			(meta (kbd "RET"))
+			(window-send-string pwd cwin)
+			(meta (kbd "RET"))
+			(run-with-timer .5 nil #'meta (kbd "C-Q")))))
+
+(defcommand mount-partition (partition mount-point password)
+    ((:string "partition to mount:  ")
+     (:string "where to mount it:  ")
+     (:password "password:  "))
+  (with-open-window "cool-retro-term" nil
+		    #'(lambda (cwin)
+			(window-send-string
+			 (concatenate 'string  "sudo mount " partition " "
+				      mount-point)
+			 cwin)
+			(meta (kbd "RET"))
+			(window-send-string password cwin)
+			(meta (kbd "RET"))
+			(run-with-timer .5 nil #'meta (kbd "C-Q")))))
+
+(defun multi-meta (strings &optional (cwin (current-window)))
+  "this aint working right. we have to handle the kbd-parse condition thrown
+by (kbd (car strings)) when (car strings) is not a stumpwm key."
+  (define-condition kbd-parse (condition) ((text :initarg :text :reader text)))
+  (if (unwind-protect (kbd (car strings)))
+      (meta (kbd (car strings)))
+      (window-send-string (car strings) cwin))
+  (when (cdr strings)
+    (multi-meta (cdr strings))))
 
 (defcommand floating-resize (w h) ((:number "W: ")
 				   (:number "H: "))
@@ -359,15 +424,6 @@ based on users global settings"
 			       (float-window-move-resize win
 							 :x old-x :y old-y
 							 :width w :height h)))))
-
-;; (float-window-move-resize (current-window) :x old-x :y old-y)
-
-(defun multi-meta (strings)
-  (if (kbd (car strings))
-      (meta (kbd (car strings)))
-      (window-send-string (car strings)))
-  (when (cdr strings)
-    (multi-meta (cdr strings))))
 
 (defcommand portacle-instance () ()
   (with-open-window "sh /home/shos/LISP/portacle/portacle.run" "Emacs" #'reclassify-window "Portacle"))
