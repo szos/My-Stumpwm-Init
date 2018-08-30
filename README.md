@@ -2,7 +2,7 @@
 
 This is a home for my .stumpwm.d/ directory.
 
-ratcontrol and translation-keys are modules I've written for controlling the pointer and simulating keys a la EXWM respectively. translation-keys needs some work, the current kludge is to bind everything to *top-map* dynamically.
+ratcontrol and translation-keys (housed in custom-modules) are modules I've written for controlling the pointer and simulating keys a la EXWM respectively. translation-keys needs some work, the current kludge is to bind everything to *top-map* dynamically.
 
 appmenu-*.lisp are menu files for the appmenu module.
 
