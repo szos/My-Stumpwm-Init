@@ -258,8 +258,6 @@ based on users global settings"
   (run-or-raise-or-list "baka-mplayer" '((:class "baka-mplayer"))))
 ;;; end media
 
-;; end fuzzy-finder section.
-
 (defcommand file-manager () ()
   "runs your file manager in the current buffer"
   (run-raise-or-list "thunar" '(:class "File Manager")))
@@ -268,7 +266,13 @@ based on users global settings"
   (run-raise-or-list "deluge" '(:class "Torrent Client")))
 
 (defcommand term () ()
-  (raise (fuzzy-finder '((:class "cool-retro-term")))))
+  (run-raise "cool-retro-term" "cool-retro-term"))
+
+(defmacro run-raise (cmd class)
+  `(if-let ((win (fuzzy-finder '((:class ,class)))))
+     (raise win)
+     (run-shell-command ,cmd)))
+
 (defcommand term-new () ()
   (run-shell-command "cool-retro-term"))
 
@@ -342,21 +346,17 @@ based on users global settings"
 					  :height 400
 					  :x 10
 					  :y 70)
-			  (meta (kbd "M-x"))
-			  (window-send-string "menu-bar-mode")
-			  (meta (kbd "RET"))
-			  (meta (kbd "M-x"))
-			  (window-send-string "slime-connect" cwin)
-			  (meta (kbd "RET"))
-			  (meta (kbd "RET"))
-			  (meta (kbd "DEL"))
-			  (window-send-string "6" cwin)
-			  (meta (kbd "RET"))
-			  (run-with-timer 3 nil #'(lambda ()
-						    (window-send-string "(in-package :stumpwm)" cwin)
-						    (meta (kbd "RET"))
-						    (meta (kbd "C-x"))
-						    (meta (kbd "1"))))))))
+			  (multi-meta '("M-x" "menu-bar-mode" "RET" "M-x"
+					"slime-connect" "RET" "RET" "DEL"
+					"6" "RET")
+				      cwin)
+			  (run-with-timer 3 nil
+					  #'(lambda ()
+					      (multi-meta
+					       '("(in-package :stumpwm)" "RET"
+						 "C-x" "1")
+					       cwin)))))))
+
 (defcommand notes () ()
   (if-let ((win (fuzzy-finder '((:class "|FLOAT|Notes")))))
     (if (eq (window-group win) (current-group))
@@ -371,21 +371,7 @@ based on users global settings"
 					  :height 400
 					  :x 10
 					  :y 70)
-			  (meta (kbd "M-x"))
-			  (window-send-string "enable-notes" cwin)
-			  (meta (kbd "RET"))))))
-
-(defun mounting (p mp pwd)
-  (with-open-window "cool-retro-term" nil
-		    #'(lambda (cwin)
-			(window-send-string
-			 (concatenate 'string  "sudo mount " p " "
-				      mp)
-			 cwin)
-			(meta (kbd "RET"))
-			(window-send-string pwd cwin)
-			(meta (kbd "RET"))
-			(run-with-timer .5 nil #'meta (kbd "C-Q")))))
+			  (multi-meta '("M-x" "enable-notes" "RET"))))))
 
 (defcommand mount-partition (partition mount-point password)
     ((:string "partition to mount:  ")
@@ -393,22 +379,39 @@ based on users global settings"
      (:password "password:  "))
   (with-open-window "cool-retro-term" nil
 		    #'(lambda (cwin)
-			(window-send-string
-			 (concatenate 'string  "sudo mount " partition " "
-				      mount-point)
+			(multi-meta
+			 `(,(concatenate 'string  "sudo mount "
+					 partition " " mount-point)
+			    "RET" ,password "RET")
 			 cwin)
-			(meta (kbd "RET"))
-			(window-send-string password cwin)
-			(meta (kbd "RET"))
 			(run-with-timer .5 nil #'meta (kbd "C-Q")))))
 
+(defcommand mount-data (pwd) ((:password "password: "))
+  (with-open-window "cool-retro-term" nil
+		    #'(lambda (cwin)
+			(multi-meta `("sudo mount /dev/sda3 /home/shos/Data"
+				      "RET" ,pwd "RET")
+				    cwin)
+			(run-with-timer .5 nil #'meta (kbd "C-Q")))))
+
+(define-condition kbd-parse ()
+  ((text :initarg :text :reader text)))
+
+(defun kbd? (string)
+  "takes a string and returns the result of calling {kbd} 
+with string, or if it isnt valid return nil."
+  (handler-case (kbd string)
+	(kbd-parse-error () nil)
+	(kbd-parse () nil)))
+
 (defun multi-meta (strings &optional (cwin (current-window)))
-  "this aint working right. we have to handle the kbd-parse condition thrown
-by (kbd (car strings)) when (car strings) is not a stumpwm key."
-  (define-condition kbd-parse (condition) ((text :initarg :text :reader text)))
-  (if (unwind-protect (kbd (car strings)))
-      (meta (kbd (car strings)))
-      (window-send-string (car strings) cwin))
+  "focuses the specified window, checks whether {kbd} errors out, and 
+either sends the {kbd} result or "
+  (unless (eq (current-window) cwin)
+    (focus-all cwin))
+  (if-let ((key (kbd? (car strings))))
+    (meta key)
+    (window-send-string (car strings)))
   (when (cdr strings)
     (multi-meta (cdr strings))))
 
@@ -446,8 +449,14 @@ by (kbd (car strings)) when (car strings) is not a stumpwm key."
     (run-raise-or-list "gimp" '(:class "Photo Editor")))
 
 ;; System
-(defcommand gparted () () 
-  (run-raise-or-list "gparted" '(:class "Filesystem Manager")))
+(defcommand gparted () ()
+  ;;(run-shell-command "gparted")
+  ;;(run-raise-or-list "gparted" '(:class "Filesystem Manager"))
+  (with-open-window "cool-retro-term -e sudo gparted" nil
+		    #'(lambda (cwin)
+			(window-send-string "junk" cwin)
+			(meta (kbd "RET"))
+			(run-with-timer 1 nil #'window-send-string (kbd "C-Q") cwin))))
 
 (defmacro conde (&body body)
   (if (not body)

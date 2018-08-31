@@ -18,13 +18,25 @@ this lets you create hydras for related behavior. "
 	 ,@bind-to-m
 	 m))))
 
+(defmacro define-lambda-hydra (&rest bindings)
+  (let ((bind-to-m (mapcar #'(lambda (bind)
+			       (push 'm bind)
+			       (push 'define-key bind))
+			   bindings)))
+    `(let ((m (make-sparse-keymap)))
+       ,@bind-to-m
+       m)))
+
 (define-hydra *top-map* (kbd "C-q")
   ((kbd "l") "slimeball")
   ((kbd "n") "notes")
   ((kbd "f") "access-floats")
   ((kbd "F") "access-floats-global")
   ((kbd "m") "sys-maniper")
-  ((kbd "q") "meta q"))
+  ((kbd "q") "meta q")
+  ((kbd "t") (define-lambda-hydra
+		 ((kbd "t") "toggle-always-on-top")
+		 ((kbd "g") "toggle-always-show"))))
 
 (defcommand sys-maniper () ()
   (system-manipulation)

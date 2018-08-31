@@ -25,64 +25,61 @@
 ;; ;;swap caps and ctrl
 (run-shell-command "setxkbmap -option ctrl:swapcaps")
 
-(add-to-load-path "~/.stumpwm.d/custom-modules/ratcontrol/")
-(add-to-load-path "~/.stumpwm.d/custom-module/translation-keys/")
 (set-module-dir "/home/shos/.stumpwm.d/module-addons/")
+(add-to-load-path "~/.stumpwm.d/custom-modules/ratcontrol/")
+(add-to-load-path "~/.stumpwm.d/custom-modules/translation-keys/")
 ;; (init-load-path "/home/shos/.stumpwm.d/translation-keys")
-
-
 ;; initialize our module directory. stumpwm defualts to 
 ;; (init-load-path "/home/shos/.stumpwm.d/contrib/")
+(load-module :translation-keys)
 
-;;(load-module :translation-keys)
+(translation-keys:define-key-translations "vlc"
+    (("C-p" "meta Up"
+	    ("Increase Volume"))
+     ("C-n" "meta Down"
+	    ("Decrease Volume"))
+     ("C-f" "meta S-Right"
+	    ("FF 3 seconds"))
+     ("C-b" "meta S-Left"
+	    ("RW 3 seconds"))
+     ("M-f" "meta M-Right"
+	    ("FF 10 seconds"))
+     ("M-b" "meta M-Left"
+	    ("RW 10 seconds"))
+     ("C-M-f" "meta C-Right"
+	      ("FF 1 Minute"))
+     ("C-M-b" "meta C-Left"
+	      ("RW 1 Minute"))
+     ;; ("C-x C-f" "meta C-o"
+     ;; 		("open media"))
+     ("C-RET" "meta n"
+	      ("Next File in Playlist"))))
 
-;; (translation-keys:define-key-translations "vlc"
-;;     (("C-p" "meta Up"
-;; 	    ("Increase Volume"))
-;;      ("C-n" "meta Down"
-;; 	    ("Decrease Volume"))
-;;      ("C-f" "meta S-Right"
-;; 	    ("FF 3 seconds"))
-;;      ("C-b" "meta S-Left"
-;; 	    ("RW 3 seconds"))
-;;      ("M-f" "meta M-Right"
-;; 	    ("FF 10 seconds"))
-;;      ("M-b" "meta M-Left"
-;; 	    ("RW 10 seconds"))
-;;      ("C-M-f" "meta C-Right"
-;; 	      ("FF 1 Minute"))
-;;      ("C-M-b" "meta C-Left"
-;; 	      ("RW 1 Minute"))
-;;      ;; ("C-x C-f" "meta C-o"
-;;      ;; 		("open media"))
-;;      ("C-RET" "meta n"
-;; 	      ("Next File in Playlist"))))
-
-;; (translation-keys:define-key-translations "Firefox"
-;;     (("C-g" "meta ESC")
-;;      ("C-v" "meta SunPageDown")
-;;      ("M-v" "meta SunPageUp")
-;;      ("C-y" "meta C-v")
-;;      ("M-w" "meta C-c")
-;;      ("C-w" "meta C-x")
-;;      ("C-s" "meta C-f")
-;;      ("C-r" "meta C-S-g")
-;;      ("C-n" "meta Down")
-;;      ("C-p" "meta Up")
-;;      ("C-f" "meta Right")
-;;      ("C-b" "meta Left")
-;;      ("C-B" "meta C-[")
-;;      ("C-F" "meta C-]")
-;;      ("M-f" "meta C-t")
-;;      ("M-b" "meta C-S-t")
-;;      ("M-<" "meta Home")
-;;      ("M->" "meta End")
-;;      ("M-s" "meta C-l")
-;;      ("s-f" "meta '")))
+(translation-keys:define-key-translations "Firefox"
+    (("C-g" "meta ESC")
+     ("C-v" "meta SunPageDown")
+     ("M-v" "meta SunPageUp")
+     ("C-y" "meta C-v")
+     ("M-w" "meta C-c")
+     ("C-w" "meta C-x")
+     ("C-s" "meta C-f")
+     ("C-r" "meta C-S-g")
+     ("C-n" "meta Down")
+     ("C-p" "meta Up")
+     ("C-f" "meta Right")
+     ("C-b" "meta Left")
+     ("C-B" "meta C-[")
+     ("C-F" "meta C-]")
+     ("M-f" "meta C-t")
+     ("M-b" "meta C-S-t")
+     ("M-<" "meta Home")
+     ("M->" "meta End")
+     ("M-s" "meta C-l")
+     ("s-f" "meta '")))
 
 ;; begin loading modules:
 (load-module "stumptray")
-;;(load-module "ratcontrol")
+(load-module "ratcontrol")
 (load-module "app-menu")
 (app-menu:load-menu-file "/home/shos/.stumpwm.d/appmenu-search.lisp")
 (app-menu:load-menu-file "/home/shos/.stumpwm.d/appmenu.lisp")
