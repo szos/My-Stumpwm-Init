@@ -29,4 +29,5 @@ contains all keybindings as well as a small macro for defining hydras - similar 
 ## windows-groups-frames.lisp ##
 contains a semi-fuzzy window searching mechanism as well as some commands for manipulating windows - mostly just testing functionality.
 
-## with-open-window.lisp ## allows one to run a shell command or stumpwm command that either raises or opens a window, and then do things to that window. This is useful for things like automatically floating a window. 
+## with-open-window.lisp ##
+allows one to run a shell command or stumpwm command that either raises or opens a window, and then do things to that window. This is useful for things like automatically floating a window. 
