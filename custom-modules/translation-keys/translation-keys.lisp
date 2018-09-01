@@ -31,17 +31,47 @@
   "takes in a menu just like select-from-menu but only returns the second item"
   (cadr (stumpwm:select-from-menu (stumpwm:current-screen) menu-list)))
 
-(stumpwm:defcommand translation-keys-help () ()
-  (stumpwm:message
-   (menu-select-cadr 
-    `(("Active Key Simulations" ,*help*)
-      ("Simulated Applications" 
-       ,(let ((hash-printer "Applications with Simulated Keys:~%"))
-	  (maphash #'(lambda (key value)
-                       (declare (ignore value))
-		       (setf hash-printer (concatenate 'string hash-printer (format nil "=> ~S~%" key))))
-		   *keysets*)
-	  hash-printer))))))
+;; (stumpwm:defcommand translation-keys-help () ()
+;;   (stumpwm:message
+;;    (menu-select-cadr 
+;;     `(("Active Key Simulations" ,*help*)
+;;       ("Simulated Applications" 
+;;        ,(let ((hash-printer "Applications with Simulated Keys:~%"))
+;; 	  (maphash #'(lambda (key value)
+;;                        (declare (ignore value))
+;; 		       (setf hash-printer (concatenate 'string hash-printer (format nil "=> ~S~%" key))))
+;; 		   *keysets*)
+;; 	  hash-printer))))))
+
+;; (stumpwm:defcommand translation-keys-help-the-second () ()
+;;   (stumpwm::eval
+;;    (menu-select-cadr 
+;;     `(("Unbind Keys" (stumpwm:message (unbind-keyset ',(gethash (gethash :last-binding *keysets*) *keysets*))))
+;;       ("Active Key Simulations" (stumpwm:message ,*help*))
+;;       ("Simulated Applications"
+;;        (stumpwm:message
+;; 	,(let ((hash-printer "Applications with Simulated Keys:~%"))
+;; 	   (maphash #'(lambda (key value)
+;; 			(declare (ignore value))
+;; 			(setf hash-printer (concatenate 'string hash-printer (format nil "=> ~S~%" key))))
+;; 		    *keysets*)
+;; 	   hash-printer)))))))
+
+;; (stumpwm:defcommand translation-keys-help-the-second () ()
+;;   (let ((response
+;; 	 (menu-select-cadr 
+;; 	  `(("Unbind Keys" (unbind-keyset ',(gethash (gethash :last-binding *keysets*) *keysets*)))
+;; 	    ("Active Key Simulations" ,*help*)
+;; 	    ("Simulated Applications"
+;; 	     ,(let ((hash-printer "Applications with Simulated Keys:~%"))
+;; 		(maphash #'(lambda (key value)
+;; 			     (declare (ignore value))
+;; 			     (setf hash-printer (concatenate 'string hash-printer (format nil "=> ~S~%" key))))
+;; 			 *keysets*)
+;; 		hash-printer))))))
+;;     (if (stringp response)
+;; 	(stumpwm:message response)
+;; 	(funcall response))))
 
 (defun hangar (cwin lwin)
   (declare (ignore lwin))

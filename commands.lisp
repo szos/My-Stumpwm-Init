@@ -81,6 +81,15 @@ multiple matches, generate a window list"
   (if-let ((match (fuzzy-finder props *window-format* all-groups all-screens)))
     (pull match)
     (run-shell-command cmd)))
+
+(defmacro run-raise (cmd class)
+  `(if-let ((win (fuzzy-finder '((:class ,class)))))
+     (raise win)
+     (run-shell-command ,cmd)))
+(defun run-pull (cmd class)
+  (if-let ((win (fuzzy-finder `((:class ,class)))))
+    (pull win)
+    (run-shell-command cmd)))
 ;; end
 
 (define-interactive-keymap gnext-map (:on-enter #'gnext) 
@@ -267,11 +276,6 @@ based on users global settings"
 
 (defcommand term () ()
   (run-raise "cool-retro-term" "cool-retro-term"))
-
-(defmacro run-raise (cmd class)
-  `(if-let ((win (fuzzy-finder '((:class ,class)))))
-     (raise win)
-     (run-shell-command ,cmd)))
 
 (defcommand term-new () ()
   (run-shell-command "cool-retro-term"))
@@ -477,11 +481,3 @@ and assign it to the argument provided."
   (with-open-window "cool-retro-term -e alsamixer" "cool-retro-term" #'reclassify-window "Alsamixer")
   ;; (run-with-timer .5 nil 'rename-current-windows-class "cool-retro-term" "AlsaMixer")
 )
-
-;; Define command to wrap pull from windowlist in lexical binding
-(defcommand pull-from-windowlist-formatted () ()
-  (let ((*window-format* "%n%s%c => %50t"))
-    (pull-from-windowlist)))
-
-(defcommand send-message (str) ((:string "message: "))
-  (message str))

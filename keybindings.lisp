@@ -42,6 +42,8 @@ this lets you create hydras for related behavior. "
   (system-manipulation)
   (sys-manip-help))
 
+
+
 (define-interactive-keymap brightness-map ()
   ((kbd "=") "brightness-change 1")
   ((kbd "+") "brightness-change 1")
@@ -69,6 +71,7 @@ this lets you create hydras for related behavior. "
 ;; (define-key *root-map* (kbd "M-s") "vsplit-equally")
 ;; (define-key *root-map* (kbd "s") "hsplit-equally 2")
 ;; (define-key *root-map* (kbd "S") "vsplit-equally 2")
+(undefine-key *root-map* (kbd "C-S"))
 (define-key *root-map* (kbd "M-q") "system-manipulation")
 (define-key *root-map* (kbd "M-b") "move-focus left")
 (define-key *root-map* (kbd "M-f") "move-focus right")
