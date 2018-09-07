@@ -75,10 +75,11 @@ this lets you create hydras for related behavior. "
 ;; (define-key *root-map* (kbd "M-f") "access-floats-global")
 
 (define-hydra *root-map* (kbd "s")
-  ((kbd "v") "vsplit-equally 2")
-  ((kbd "h") "hsplit-equally 2")
-  ((kbd "V") "vsplit-equally")
-  ((kbd "H") "hsplit-equally"))
+  ((kbd "v") "hsplit")
+  ((kbd "h") "vsplit")
+  ;; ((kbd "V") "vsplit-equally")
+  ;; ((kbd "H") "hsplit-equally")
+  )
 
 ;; (define-key *root-map* (kbd "C-s") "hsplit-equally")
 ;; (define-key *root-map* (kbd "M-s") "vsplit-equally")
@@ -102,7 +103,7 @@ this lets you create hydras for related behavior. "
 ;;jump straight to eval prompt
 (define-key *root-map* (kbd "M-e") "eval")
 ;;change behavior of prefix-w (normally calls windows) to call windowlist isntead
-(define-key *root-map* (kbd "w") "pull-from-windowlist-formatted")
+;; (define-key *root-map* (kbd "w") "pull-from-windowlist-formatted") ;; possibly missing/unused. 
 (define-key *root-map* (kbd "C-w") "vgroups")
 ;;define the menu key from app-menu module
 (define-key *root-map* (kbd "j") "show-menu")
