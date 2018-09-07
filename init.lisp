@@ -28,6 +28,7 @@
 (set-module-dir "/home/shos/.stumpwm.d/module-addons/")
 (add-to-load-path "~/.stumpwm.d/custom-modules/ratcontrol/")
 (add-to-load-path "~/.stumpwm.d/custom-modules/translation-keys/")
+(add-to-load-path "~/.stumpwm.d/custom-modules/matrix-stump/")
 ;; (init-load-path "/home/shos/.stumpwm.d/translation-keys")
 ;; initialize our module directory. stumpwm defualts to 
 ;; (init-load-path "/home/shos/.stumpwm.d/contrib/")
@@ -57,6 +58,7 @@
 
 (translation-keys:define-key-translations "Firefox"
     (("C-g" "meta ESC")
+     ("C-q" "meta SunPageDown")
      ("C-v" "meta SunPageDown")
      ("M-v" "meta SunPageUp")
      ("C-y" "meta C-v")

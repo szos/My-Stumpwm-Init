@@ -11,9 +11,15 @@
 
 (defparameter *help* "")
 
+(defparameter *top-map* stumpwm:*top-map*)
+
 (setf (gethash :last-binding *keysets*) nil)
 
 (defmacro define-key-translations (class kmap)
+  "first, puts the class and kmap into a hash table as key/value
+respectivly, after adding in M-h for a help binding. then it hangs 
+hangar on the *focus-window-hook* (hangar isnt misspelled, its a 
+hangar for the various kmaps, which hangs, like a hanger, on the hook)."
   `(progn
      (remhash ,class *keysets*)
      (add-keyset ,class
@@ -43,19 +49,19 @@
 ;; 		   *keysets*)
 ;; 	  hash-printer))))))
 
-;; (stumpwm:defcommand translation-keys-help-the-second () ()
-;;   (stumpwm::eval
-;;    (menu-select-cadr 
-;;     `(("Unbind Keys" (stumpwm:message (unbind-keyset ',(gethash (gethash :last-binding *keysets*) *keysets*))))
-;;       ("Active Key Simulations" (stumpwm:message ,*help*))
-;;       ("Simulated Applications"
-;;        (stumpwm:message
-;; 	,(let ((hash-printer "Applications with Simulated Keys:~%"))
-;; 	   (maphash #'(lambda (key value)
-;; 			(declare (ignore value))
-;; 			(setf hash-printer (concatenate 'string hash-printer (format nil "=> ~S~%" key))))
-;; 		    *keysets*)
-;; 	   hash-printer)))))))
+(stumpwm:defcommand translation-keys-help () ()
+  (stumpwm::eval
+   (menu-select-cadr 
+    `(("Unbind Keys" (stumpwm:message (unbind-keyset ',(gethash (gethash :last-binding *keysets*) *keysets*))))
+      ("Active Key Simulations" (stumpwm:message ,*help*))
+      ("Simulated Applications"
+       (stumpwm:message
+	,(let ((hash-printer "Applications with Simulated Keys:~%"))
+	   (maphash #'(lambda (key value)
+			(declare (ignore value))
+			(setf hash-printer (concatenate 'string hash-printer (format nil "=> ~S~%" key))))
+		    *keysets*)
+	   hash-printer)))))))
 
 ;; (stumpwm:defcommand translation-keys-help-the-second () ()
 ;;   (let ((response
@@ -74,20 +80,26 @@
 ;; 	(funcall response))))
 
 (defun hangar (cwin lwin)
+  "we start by disregarding lwin, and grabbing the kmap associated with the 
+windows class (if not bound, will be nil). if the last binding is equal to 
+the window class, "
   (declare (ignore lwin))
   (let ((kmap-to-bind (gethash (stumpwm:window-class cwin) *keysets*)))
     (unless (equalp (gethash :last-binding *keysets*) (stumpwm:window-class cwin))
       (when (gethash :last-binding *keysets*)
 	(unbind-keyset (gethash (gethash :last-binding *keysets*) *keysets*))
-	(setf (gethash :last-binding *keysets*) nil))
+	(setf (gethash :last-binding *keysets*) nil)
+	(bind-keyset (gethash :default *keysets*)))
       (when kmap-to-bind
-	(setf *help* (bind-keyset kmap-to-bind))
+	(setf *help* (bind-keyset kmap-to-bind)) ;; bind keys here. 
 	(setf (gethash :last-binding *keysets*) (stumpwm:window-class cwin))))))
 
 (defun bind-keyset (kmap)
   (if kmap
       (destructuring-bind ((binding command &optional (docs)) &rest others) kmap
-	(stumpwm:define-key stumpwm:*top-map* (stumpwm:kbd binding) command)
+	(if (stringp command)
+	    (stumpwm:define-key stumpwm:*top-map* (stumpwm:kbd binding) command)
+	    (stumpwm:define-key stumpwm:*top-map* (stumpwm:kbd binding) command))
 	(let ((message-string (concatenate 'string binding " ==> " command "~%"
 					   (if docs
 					       (concatenate 'string "  " (car docs) "~%~%")
@@ -105,7 +117,6 @@
 					   (unbind-keyset others))))
 	  message-string))
       "~%"))
-
 
 ;; (translation-keys:define-key-translations "Firefox"
 ;;     (("C-g" "meta ESC")

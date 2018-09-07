@@ -22,7 +22,7 @@ multiple matches, generate a window list"
                     (old-frame (tile-group-current-frame group)))
                (focus-all win)
                (unless (eq frame old-frame)
-                 (show-frame-indicator group)))))
+                 (show-frame-indicator group))))))
         (let ((matches (find-matching-windows props all-groups all-screens)))
           (case (length matches)
     	    (0 (run-shell-command cmd))
@@ -30,7 +30,7 @@ multiple matches, generate a window list"
     		   (focus-all (car matches))
     		   (goto-win (car matches))))
     	    (t ;; (windowlist *window-format* matches)
-	     (windowlist "%n%s%i => %t" matches))))))
+	     (windowlist "%n%s%i => %t" matches)))))
 
 (defun run-raise-list (props &optional (all-groups *run-or-raise-all-groups*)
     				      (all-screens *run-or-raise-all-screens*))
@@ -91,6 +91,9 @@ multiple matches, generate a window list"
     (pull win)
     (run-shell-command cmd)))
 ;; end
+
+(defcommand pullall () ()
+  (pull (fuzzy-finder)))
 
 (define-interactive-keymap gnext-map (:on-enter #'gnext) 
   ((kbd "'") "gnext");cycle groups
@@ -232,16 +235,23 @@ based on users global settings"
   "create new instance of portable icecat"
   (run-shell-command "~/icecat/icecat" ))
 
+(defcommand w3m () ()
+  "runs w3m open to duckduckgo"
+  (run-shell-command "cool-retro-term -e w3m duckduckgo.com"))
+
 (defcommand elinks () ()
   "runs an instance of elinks from the terminal"
   (run-shell-command "xfce4-terminal -e elinks"))
 (defcommand elinks-anon () ()
   "runs instance of elinks without connecting to the head elinks process and connects anonymously"
-  (run-shell-command "xfce4-terminal -e elinks -anonymous 1 -no-connect 1"))
+  (run-shell-command "cool-retro-term -e elinks -anonymous 1 -no-connect 1"))
 
 (defcommand list-browsers () ()
   "raise a list of all the browsers open"
   (fuzzy-finder '((:class "Firefox") (:class "Icecat") (:class "Conkeror"))))
+
+(defcommand riot () ()
+	    (exec riot-desktop))
 
 ;;; specific webpages (using fuzzy-finder)
 ;; (defcommand youtube () ()
@@ -253,6 +263,9 @@ based on users global settings"
 
 (defcommand qtox () ()
   (run-or-raise-or-list "qtox" '((:class "qTox"))))
+
+(defcommand Riot () ()
+  (run-raise "riot-desktop" "Riot"))
 
 ;;; Media
 (defcommand vlc () ()

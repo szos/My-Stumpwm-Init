@@ -42,7 +42,20 @@ this lets you create hydras for related behavior. "
   (system-manipulation)
   (sys-manip-help))
 
-
+(translation-keys:define-key-translations :default
+    (("C-q" "eval 
+	    (progn
+	      (stumpwm::define-hydra stumpwm::*top-map* (stumpwm::kbd \"C-q\")
+		((stumpwm::kbd \"l\") \"slimeball\")
+		((stumpwm::kbd \"n\") \"notes\")
+		((stumpwm::kbd \"f\") \"access-floats\")
+		((stumpwm::kbd \"F\") \"access-floats-global\")
+		((stumpwm::kbd \"m\") \"sys-maniper\")
+		((stumpwm::kbd \"q\") \"meta q\")
+		((stumpwm::kbd \"t\") (stumpwm::define-lambda-hydra
+					  ((stumpwm::kbd \"t\") \"toggle-always-on-top\")
+					  ((stumpwm::kbd \"g\") \"toggle-always-show\"))))
+	      )")))
 
 (define-interactive-keymap brightness-map ()
   ((kbd "=") "brightness-change 1")
