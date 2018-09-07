@@ -465,16 +465,6 @@ either sends the {kbd} result or "
 (defcommand gimp () () 
     (run-raise-or-list "gimp" '(:class "Photo Editor")))
 
-;; System
-(defcommand gparted () ()
-  ;;(run-shell-command "gparted")
-  ;;(run-raise-or-list "gparted" '(:class "Filesystem Manager"))
-  (with-open-window "cool-retro-term -e sudo gparted" nil
-		    #'(lambda (cwin)
-			(window-send-string "junk" cwin)
-			(meta (kbd "RET"))
-			(run-with-timer 1 nil #'window-send-string (kbd "C-Q") cwin))))
-
 (defmacro conde (&body body)
   (if (not body)
       nil
