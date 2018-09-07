@@ -1,6 +1,6 @@
 (in-package :stumpwm)
 
-(defmacro define-hydra (map key &rest bindings)
+(defmacro define-hydra-macro (map key &rest bindings)
   "this macro takes a map, a key, and some more bindings, and generates a hydra
 which lets you create something like a prefix key. for example if you want to 
 bind a command to 'prefix C-x n' youd write 
@@ -27,35 +27,68 @@ this lets you create hydras for related behavior. "
        ,@bind-to-m
        m)))
 
-(define-hydra *top-map* (kbd "C-q")
-  ((kbd "l") "slimeball")
-  ((kbd "n") "notes")
-  ((kbd "f") "access-floats")
-  ((kbd "F") "access-floats-global")
-  ((kbd "m") "sys-maniper")
-  ((kbd "q") "meta q")
-  ((kbd "t") (define-lambda-hydra
-		 ((kbd "t") "toggle-always-on-top")
-		 ((kbd "g") "toggle-always-show"))))
+(defcommand define-hydra (bindings)
+    ((:rest "bindings: "))
+  (let ((k (make-sparse-keymap)))
+    (when  (stringp bindings)
+      (setf bindings (read-from-string bindings)))
+    (mapcar #'(lambda (binding)
+		(funcall #'define-key k (eval (car binding)) (second binding)))
+	    bindings)
+    k))
+
+(defcommand hydra (bindings key) ((:variable "bindings: ")
+				  (:key "key: "))
+  (let ((binds (read-from-string bindings)))
+    (mapcar #'(lambda (binding)
+		(when (eql key (car binding))
+		  (cadr binding)))
+	    binds)))
+
+(define-key *top-map* (kbd "C-q")
+  (define-hydra
+      '(((kbd "l") "slimeball")
+	((kbd "n") "notes")
+	((kbd "f") "access-floats")
+	((kbd "F") "access-floats-global")
+	((kbd "m") "sys-maniper")
+	((kbd "q") "meta q")
+	((kbd "t") (define-hydra
+		    (((kbd "t") "toggle-always-on-top")
+		     ((kbd "g") "toggle-always-show")))))))
 
 (defcommand sys-maniper () ()
   (system-manipulation)
   (sys-manip-help))
 
+(defcommand redef-c-q () ()
+  (define-key *top-map* (kbd "C-q")
+    (define-hydra
+	'((kbd "l") "slimeball")
+	'((kbd "n") "notes")
+      '((kbd "f") "access-floats")
+      '((kbd "F") "access-floats-global")
+      '((kbd "m") "sys-maniper")
+      '((kbd "q") "meta q")
+      '((kbd "t") (define-hydra
+		   '((kbd "t") "toggle-always-on-top")
+		   '((kbd "g") "toggle-always-show"))))))
+
+(defcommand redef-c-q-old () ()
+  (stumpwm::define-hydra stumpwm::*top-map* (stumpwm::kbd "C-q")
+    ((stumpwm::kbd "l") "slimeball")
+    ((stumpwm::kbd "n") "notes")
+    ((stumpwm::kbd "f") "access-floats")
+    ((stumpwm::kbd "F") "access-floats-global")
+    ((stumpwm::kbd "m") "sys-maniper")
+    ((stumpwm::kbd "q") "meta q")
+    ((stumpwm::kbd "t") (stumpwm::define-lambda-hydra
+			    ((stumpwm::kbd "t") "toggle-always-on-top")
+			    ((stumpwm::kbd "q") "toggle-always-show")))))
+
 (translation-keys:define-key-translations :default
-    (("C-q" "eval 
-	    (progn
-	      (stumpwm::define-hydra stumpwm::*top-map* (stumpwm::kbd \"C-q\")
-		((stumpwm::kbd \"l\") \"slimeball\")
-		((stumpwm::kbd \"n\") \"notes\")
-		((stumpwm::kbd \"f\") \"access-floats\")
-		((stumpwm::kbd \"F\") \"access-floats-global\")
-		((stumpwm::kbd \"m\") \"sys-maniper\")
-		((stumpwm::kbd \"q\") \"meta q\")
-		((stumpwm::kbd \"t\") (stumpwm::define-lambda-hydra
-					  ((stumpwm::kbd \"t\") \"toggle-always-on-top\")
-					  ((stumpwm::kbd \"g\") \"toggle-always-show\"))))
-	      )")))
+    (("C-q" "redef-c-q")))
+		    
 
 (define-interactive-keymap brightness-map ()
   ((kbd "=") "brightness-change 1")
@@ -74,12 +107,10 @@ this lets you create hydras for related behavior. "
 ;; (define-key *root-map* (kbd "C-f") "access-floats")
 ;; (define-key *root-map* (kbd "M-f") "access-floats-global")
 
-(define-hydra *root-map* (kbd "s")
-  ((kbd "v") "hsplit")
-  ((kbd "h") "vsplit")
-  ;; ((kbd "V") "vsplit-equally")
-  ;; ((kbd "H") "hsplit-equally")
-  )
+(define-key *root-map* (kbd "s")
+  (define-hydra
+      '(((kbd "v") "hsplit")
+	((kbd "h") "vsplit"))))
 
 ;; (define-key *root-map* (kbd "C-s") "hsplit-equally")
 ;; (define-key *root-map* (kbd "M-s") "vsplit-equally")

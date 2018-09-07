@@ -72,12 +72,55 @@
      ("C-b" "meta Left")
      ("C-B" "meta C-[")
      ("C-F" "meta C-]")
-     ("M-f" "meta C-t")
+     ("M-f" "meta C-t")n
      ("M-b" "meta C-S-t")
      ("M-<" "meta Home")
      ("M->" "meta End")
      ("M-s" "meta C-l")
      ("s-f" "meta '")))
+
+(translation-keys:define-key-trans "Tor Browser"
+    `(("C-g" "meta ESC"
+	     ("quit/escape"))
+      ("M-<" "meta Home"
+     	     ("go to top of page"))
+      ("M->" "meta End"
+     	     ("go to bottom of page"))
+      ("C-v" "meta SunPageDown"
+     	     ("Page down"))
+      ("M-v" "meta SunPageUp"
+     	     ("page up"))
+      ("M-w" "meta C-c"
+     	     ("copy selected text"))
+      ("C-w" "meta C-x"
+     	     ("cut selected test"))
+      ("C-y" "meta C-v"
+     	     ("paste selected text."))
+      ("C-s" "meta C-g"
+     	     ("search forward."))
+      ("C-r" "meta C-G"
+     	     ("search backward"))
+      ("C-n" "meta Down"
+     	     ("send a down arrow key. figure out how to differentiate..."))
+      ("C-p" "meta Up"
+     	     ("send an up arrow"))
+      ("C-M-b" "meta C-["
+     	       ("navigate backwards one page in history"))
+      ("C-M-f" "meta C-]"
+      	       ("navigate forwards one page in history"))
+      ("C-x" ,(define-hydra
+		  '(((kbd "C-c") "meta C-q") 
+		    ((kbd "1") "meta C-1")
+		    ((kbd "2") "meta C-2")
+		    ((kbd "u") "meta C-T")
+		    ((kbd "C-f") "meta '")
+		    ((kbd "n") "meta C-n")
+		    ((kbd "g") "meta F6")
+		    ((kbd "G") "meta S-F6")
+		    ((kbd "+") "meta C-+")
+		    ((kbd "-") "meta C--")
+		    ((kbd "0") "meta C-0")))
+	     ("this is a hydra, defining k as quit, etc..."))))
 
 ;; begin loading modules:
 (load-module "stumptray")
@@ -289,5 +332,6 @@
 (swank:create-server :port 4006
 		     :style swank:*communication-style*
 		     :dont-close t)
+
 
 

@@ -4,7 +4,7 @@
 
 ;;; "translation-keys" goes here. Hacks and glory await!
 
-(export '(define-key-translations translation-keys-help))
+(export '(define-key-translations define-key-trans translation-keys-help))
 
 (defparameter *keysets*
   (make-hash-table :test #'equal))
@@ -28,6 +28,15 @@ hangar for the various kmaps, which hangs, like a hanger, on the hook)."
 		       ',kmap))
      (unless (member 'hangar stumpwm:*focus-window-hook*)
        (stumpwm:add-hook stumpwm:*focus-window-hook* 'hangar))))
+
+(defun define-key-trans (class kmap)
+  (remhash class *keysets*)
+  (add-keyset class
+	      (cons '("M-h" "translation-keys-help"
+		      ("Bring up a menu of all bindings"))
+		    kmap))
+  (unless (member 'hangar stumpwm:*focus-window-hook*)
+    (stumpwm:add-hook stumpwm:*focus-window-hook* 'hangar)))
 
 (defun add-keyset (class-name kmap)
   (unless (gethash class-name *keysets*)
@@ -97,10 +106,14 @@ the window class, "
 (defun bind-keyset (kmap)
   (if kmap
       (destructuring-bind ((binding command &optional (docs)) &rest others) kmap
-	(if (stringp command)
-	    (stumpwm:define-key stumpwm:*top-map* (stumpwm:kbd binding) command)
-	    (stumpwm:define-key stumpwm:*top-map* (stumpwm:kbd binding) command))
-	(let ((message-string (concatenate 'string binding " ==> " command "~%"
+	(stumpwm:define-key stumpwm:*top-map* (stumpwm:kbd binding) command)
+	;; (cond ((stringp command)
+	;;        (stumpwm:define-key stumpwm:*top-map* (stumpwm:kbd binding) command))
+	;;       ((listp command)
+	;;        (stumpwm:define-key stumpwm:*top-map* (stumpwm:kbd binding) command)))
+	(let ((message-string (concatenate 'string binding " ==> " (if (not (stringp command))
+								       (format nil "~S" command)
+								       command) "~%"
 					   (if docs
 					       (concatenate 'string "  " (car docs) "~%~%")
 					       "~%")
@@ -113,8 +126,11 @@ the window class, "
       (destructuring-bind ((binding command &optional (docs)) &rest others) kmap
 	(declare (ignore docs))
 	(stumpwm:undefine-key stumpwm:*top-map* (stumpwm:kbd binding))
-	(let ((message-string (concatenate 'string "Unbound:  " binding " ==> " command "~%"
-					   (unbind-keyset others))))
+	(let ((message-string (concatenate 'string "Unbound:  "
+					   binding " ==> " (if (not (stringp command))
+							       (format nil "~S" command)
+							       command)"~%"
+							       (unbind-keyset others))))
 	  message-string))
       "~%"))
 

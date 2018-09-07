@@ -40,6 +40,46 @@
 	  (focus-all win)
 	  (message "Window not in current group, all groups is nil"))))
 
+(defun frame-closest-to-point (point &optional (group (current-group)))
+  "takes a point and returns the frame closest to it. 
+point is in form (x . y)"
+  (let ((frames (group-frames group))
+	(frame-num nil)
+	(possible-frames-xy-alist nil)
+	(track nil))
+    (setf possible-frames-xy-alist
+	  (mapcar #'(lambda (frame)
+		      `(,(sqrt (+ (expt (- (frame-x frame) (car point)) 2)
+				  (expt (- (frame-y frame) (cdr point)) 2)))
+			 . ,(frame-number frame)))
+		  frames))
+    (mapcar #'(lambda (x)
+		(let ((dist (car x)))
+    		  (when (or (not track) (< dist track))
+    		    (setf track dist))))
+    	    possible-frames-xy-alist)
+    (setf frame-num (cdr (assoc track possible-frames-xy-alist)))
+    (frame-by-number group frame-num)))
+
+(defun unfloat-window (window group)
+  ;; maybe find the frame geometrically closest to this float?
+  (let ((frame (frame-closest-to-point (cons (window-x window)
+					     (window-y window)))))
+    (change-class window 'tile-window :frame frame)
+    (setf (window-frame window) frame
+          (frame-window frame) window
+          (tile-group-current-frame group) frame)
+    (update-decoration window)
+    (sync-frame-windows group frame)))
+
+(defun float-window (window group)
+  (let ((frame (tile-group-current-frame group)))
+    (change-class window 'float-window)
+    (float-window-align window)
+    (funcall-on-node (tile-group-frame-tree group)
+                     (lambda (f) (setf (slot-value f 'window) nil))
+                     (lambda (f) (eq frame f)))))
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; Fuzzy finding windows ;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;

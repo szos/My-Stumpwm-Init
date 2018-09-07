@@ -86,14 +86,22 @@ multiple matches, generate a window list"
   `(if-let ((win (fuzzy-finder '((:class ,class)))))
      (raise win)
      (run-shell-command ,cmd)))
+
 (defun run-pull (cmd class)
   (if-let ((win (fuzzy-finder `((:class ,class)))))
     (pull win)
     (run-shell-command cmd)))
 ;; end
 
-(defcommand pullall () ()
-  (pull (fuzzy-finder)))
+(defcommand all-pullall () ()
+  (let* ((*window-format* "%n%s%c => %30t")
+	 (win (fuzzy-finder)))
+    (when win (pull win))))
+
+(defcommand pullstr (str) ((:string "pull: "))
+  (let* ((*window-format* "%n%s%c => %30t")
+	 (win (fuzzy-finder `((:class ,str)))))
+    (when win (pull win))))
 
 (define-interactive-keymap gnext-map (:on-enter #'gnext) 
   ((kbd "'") "gnext");cycle groups
@@ -216,6 +224,12 @@ based on users global settings"
 (defcommand conkeror-n () ()
   "run a new conkeror instance"
   (run-shell-command "conkeror"))
+
+(defcommand tor () ()
+  "runs or raises tor."
+  (if-let ((win (fuzzy-finder '((:class "Tor Browser")))))
+    (raise win)
+    (run-shell-command "./TOR/Browser/start-tor-browser")))
 
 (defcommand icecat () ()
   "icarun raise or list icecat"

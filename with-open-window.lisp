@@ -76,8 +76,7 @@ title to the title of the document opened - generally Untitled 1. "
 			      (new-class nil) (x nil) (y nil) (width nil)
 			      (height nil))
   (progn
-    (focus-all cwin)
-    (float-this)
+    (float-window cwin (window-group cwin))
     (float-window-move-resize cwin :x x :y y :width width :height height)
     (if new-class
 	(setf (window-class cwin) (concatenate 'string "|FLOAT|" new-class))
@@ -88,4 +87,4 @@ title to the title of the document opened - generally Untitled 1. "
       (toggle-always-show))
     (when always-on-top
       (toggle-always-on-top))))
-    ))
+    
