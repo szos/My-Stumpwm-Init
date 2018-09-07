@@ -9,6 +9,47 @@
 ;; (export '(ratcontrol-cut-down ratcontrol-cut-up ratcontrol-cut-left ratcontrol-cut-right
 ;; 	  ratcontrol-initialize ratcontrol-help))
 
+;; a macro for letting ratcontrol be active without exiting.
+(defmacro define-interactive-keymap-no-return (name (&key on-enter on-exit abort-if) &body key-bindings)
+  "Declare an interactive keymap mode. This can be used for developing
+interactive modes or command trees, such as @command{iresize}.
+
+The NAME argument follows the same convention as in @command{defcommand}.
+
+ON-ENTER and ON-EXIT are optional functions to run before and after the
+interactive keymap mode, respectively. If ABORT-IF is defined, the interactive
+keymap will only be activated if calling ABORT-IF returns true.
+
+KEY-BINDINGS is a list of the following form: ((KEY COMMAND) (KEY COMMAND) ...)
+
+Each element in KEY-BINDINGS declares a command inside the interactive keymap.
+Be aware that these commands won't require a prefix to run."
+  (let* ((command (if (listp name) (car name) name))
+         (exit-command (format nil "EXIT-~A" command))
+         (keymap (gensym "m")))
+    (multiple-value-bind (key-bindings decls docstring)
+        (stumpwm::parse-body key-bindings :documentation t)
+      `(let ((,keymap (make-sparse-keymap)))
+         ,@(loop for keyb in key-bindings
+                 collect `(define-key ,keymap ,@keyb))
+         ;; (define-key ,keymap (kbd "RET") ,exit-command)
+         (define-key ,keymap (kbd "C-g") ,exit-command)
+         (define-key ,keymap (kbd "ESC") ,exit-command)
+
+         (defcommand ,name () ()
+           ,@decls
+           ,(or docstring
+                (format nil "Starts interactive command \"~A\"" command))
+           ,@(when abort-if `((when (funcall ,abort-if)
+                                (return-from ,command))))
+
+           ,@(when on-enter `((funcall ,on-enter)))
+           (stumpwm::enter-interactive-keymap ,keymap (quote ,command)))
+
+         (defcommand ,(intern exit-command) () ()
+           ,@(when on-exit `((funcall ,on-exit)))
+           (stumpwm::exit-interactive-keymap (quote ,command)))))))
+
 ;; parameters for tracking the frame
 (defvar *resolution* '(1920 1080))
 (defparameter *x-min-max* '(0 1920))
@@ -123,6 +164,30 @@ typing and allow one work with text editors that arent keyboard driven"
   ((kbd "C-r") "meta RET")
   ((kbd "C-h") "ratcontrol-help")
   ((kbd "M-h") "ratcontrol-help"))
+
+(define-interactive-keymap-no-return ratcontrol-typing (:on-enter #'binary-ratwarp-init
+								  :on-exit #'banish)
+  "a keymap for ratcontrol. designed to stay out of the way of
+typing and allow one work with text editors that arent keyboard driven"
+  ((kbd "C-p") "ratcontrol-cut-up")
+  ((kbd "C-n") "ratcontrol-cut-down")
+  ((kbd "C-f") "ratcontrol-cut-right")
+  ((kbd "C-b") "ratcontrol-cut-left")
+  ((kbd "C-c") "ratcontrol-click 1")
+  ((kbd "M-c") "ratcontrol-click 2")
+  ((kbd "M-p") "ratsnap up 50")
+  ((kbd "M-n") "ratsnap down 50")
+  ((kbd "M-f") "ratsnap right 50")
+  ((kbd "M-b") "ratsnap left 50")
+  ((kbd "C-C") "ratclick 1")
+  ((kbd "M-C") "ratclick 2")
+  ((kbd "C-M-c") "run-shell-command xte \"mouseclick 5\"")
+  ((kbd "C-M-C") "run-shell-command xte \"mouseclick 4\"")
+  ((kbd "C-q") "ratcontrol-click 0")
+  ((kbd "C-r") "meta RET")
+  ((kbd "C-h") "ratcontrol-help")
+  ((kbd "M-h") "ratcontrol-help")
+  ((kbd "M-r") "ratcontrol-help"))
 
 (defcommand ratcontrol-help () ()
   (message "::::::::Ratcontrol Help::::::::

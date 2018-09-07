@@ -108,17 +108,31 @@
      	       ("navigate backwards one page in history"))
       ("C-M-f" "meta C-]"
       	       ("navigate forwards one page in history"))
+      ("M-f" "meta C-TAB"
+	     ("move forward one tab"))
+      ("M-b" "meta C-S-TAB"
+	     ("move backward one tab"))
+      ("M-B" "meta C-S-SunPageUp"
+	     ("pull current tab left"))
+      ("M-F" "meta C-S-SunPageDown"
+	     ("Pull current tab right"))
+      ("M-r" "ratcontrol-typing"
+	     ("starts ratcontrol without <RET> bound to exit interactive keymap."))
       ("C-x" ,(define-hydra
-		  '(((kbd "C-c") "meta C-q") 
-		    ((kbd "1") "meta C-1")
+		  '(((kbd "C-c") "meta C-q") ;; quit
+		    ((kbd "k") "meta C-w") ;; close tab
+		    ((kbd "K") "meta C-S-w") ;; close window
+		    ((kbd "1") "meta C-1") 
 		    ((kbd "2") "meta C-2")
-		    ((kbd "u") "meta C-T")
-		    ((kbd "C-f") "meta '")
-		    ((kbd "n") "meta C-n")
-		    ((kbd "g") "meta F6")
-		    ((kbd "G") "meta S-F6")
-		    ((kbd "+") "meta C-+")
-		    ((kbd "-") "meta C--")
+		    ((kbd "u") "meta C-T") ;; undo close tab
+		    ((kbd "C-f") "meta '") ;; search text in links
+		    ((kbd "n") "meta C-n") ;; new window
+		    ((kbd "p") "meta C-S-p") ;; new private window
+		    ((kbd "x") "meta F6") ;; cycle browser frame
+		    ((kbd "C-x") "meta S-F6")
+		    ((kbd "+") "meta C-+") ;; zoom in 
+		    ((kbd "-") "meta C--") ;; zoom out
+		    ((kbd "=") "meta C-0") ;; reset zoom
 		    ((kbd "0") "meta C-0")))
 	     ("this is a hydra, defining k as quit, etc..."))))
 
@@ -213,6 +227,7 @@
   
 
 ;; load files
+(load "~/.stumpwm.d/interactive-maps.lisp")
 (load "~/.stumpwm.d/with-open-window.lisp")
 (load "~/.stumpwm.d/commands-reclass.lisp")
 (load "~/.stumpwm.d/windows-groups-frames.lisp")
