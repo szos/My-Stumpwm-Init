@@ -25,14 +25,14 @@
 ;; ;;swap caps and ctrl
 (run-shell-command "setxkbmap -option ctrl:swapcaps")
 
-(set-module-dir "/home/shos/.stumpwm.d/module-addons/")
-(add-to-load-path "~/.stumpwm.d/custom-modules/ratcontrol/")
-(add-to-load-path "~/.stumpwm.d/custom-modules/translation-keys/")
-(add-to-load-path "~/.stumpwm.d/custom-modules/matrix-stump/")
+(set-module-dir "/home/shos/.stumpwm.d/")
+;;(add-to-load-path "~/.stumpwm.d/custom-modules/ratcontrol/")
+;;(add-to-load-path "~/.stumpwm.d/custom-modules/translation-keys/")
+;;(add-to-load-path "~/.stumpwm.d/custom-modules/matrix-stump/")
 ;; (init-load-path "/home/shos/.stumpwm.d/translation-keys")
 ;; initialize our module directory. stumpwm defualts to 
 ;; (init-load-path "/home/shos/.stumpwm.d/contrib/")
-(load-module :translation-keys)
+(load-module "translation-keys")
 
 (translation-keys:define-key-translations "vlc"
     (("C-p" "meta Up"
@@ -285,6 +285,7 @@
 ;; load swank to connect via emacs
 (require :swank)
 (swank-loader:init)
+(swank:stop-server 4006)
 (swank:create-server :port 4006
 		     :style swank:*communication-style*
 		     :dont-close t)
