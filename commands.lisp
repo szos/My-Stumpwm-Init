@@ -9,7 +9,7 @@
 
 ;;define functions:
 (defun run-raise-or-list (cmd props &optional (all-groups *run-or-raise-all-groups*)
-    				      (all-screens *run-or-raise-all-screens*))
+    				      (all-screens *run-or-raise-all-screens*)) 
       "Run the shell command, {cmd}, unless an existing window 
 matches the {props} as described in run-or-raise. If {props} have 
 multiple matches, generate a window list"
@@ -272,6 +272,8 @@ based on users global settings"
 ;;   "find YouTube in the title field."
 ;;   (find-then-do "YouTube" "title"))
 
+(defprogram-shortcut thunderbird)
+
 (defcommand mail () ()
   (run-or-raise-or-list "thunderbird" '((:class "Thunderbird"))))
 
@@ -294,6 +296,8 @@ based on users global settings"
   (run-or-raise-or-list "baka-mplayer" '((:class "baka-mplayer"))))
 ;;; end media
 
+(defprogram-shortcut thunar)
+
 (defcommand file-manager () ()
   "runs your file manager in the current buffer"
   (run-raise-or-list "thunar" '(:class "File Manager")))
@@ -306,6 +310,13 @@ based on users global settings"
 
 (defcommand term-new () ()
   (run-shell-command "cool-retro-term"))
+
+(defcommand termacs () ()
+  (with-open-window "cool-retro-term -e emacs -nw" "cool-retro-term"
+		    #'(lambda (cwin)
+			(reclassify-window cwin "Emacs")
+			;; (meta "M-x")
+			)))
 
 (defcommand terminal () ()
   (xfce4-terminal))
@@ -388,6 +399,32 @@ based on users global settings"
 						 "C-x" "1")
 					       cwin)))))))
 
+(defcommand replball () ()
+  (if-let ((win (fuzzy-finder '((:class "|FLOAT|Replball")))))
+    (if (eq (window-group win) (current-group))
+	(raise win)
+	(eval (second (select-from-menu (current-screen)
+					`(("Jump to Replball" (raise ,win))
+					  ("Stay Here" nil))))))
+    (with-open-window "cool-retro-term -e emacs -nw" "cool-retro-term"
+		      #'(lambda (cwin)
+			  (float-in-tiles cwin
+					  :new-class "Replball"
+					  :width 540
+					  :height 400
+					  :x 10
+					  :y 70)
+			  (multi-meta '("M-x" "menu-bar-mode" "RET" "M-x"
+					"slime-connect" "RET" "RET" "DEL"
+					"6" "RET")
+				      cwin)
+			  (run-with-timer 1 nil
+					  #'(lambda ()
+					      (multi-meta
+					       '("(in-package :stumpwm)" "RET"
+						 "C-x" "1")
+					       cwin)))))))
+
 (defcommand notes () ()
   (if-let ((win (fuzzy-finder '((:class "|FLOAT|Notes")))))
     (if (eq (window-group win) (current-group))
@@ -463,7 +500,7 @@ either sends the {kbd} result or "
   (with-open-window "sh /home/shos/LISP/portacle/portacle.run" "Emacs" #'reclassify-window "Portacle"))
 
 ;;;begin pacman and other system bits
-(defcommand update-system () ()
+( defcommand update-system () ()
   (run-shell-command "xfce4-terminal -e sudo pacman -Syu"))
 
 ;; Games

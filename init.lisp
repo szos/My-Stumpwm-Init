@@ -23,7 +23,7 @@
 (define-key *root-map* (kbd ";") "colon") ;; needed for some reason. 
 
 ;; ;;swap caps and ctrl
-(run-shell-command "setxkbmap -option ctrl:swapcaps")
+;; (run-shell-command "setxkbmap -option ctrl:swapcaps")
 
 (set-module-dir "/home/shos/.stumpwm.d/")
 ;;(add-to-load-path "~/.stumpwm.d/custom-modules/ratcontrol/")
@@ -32,6 +32,16 @@
 ;; (init-load-path "/home/shos/.stumpwm.d/translation-keys")
 ;; initialize our module directory. stumpwm defualts to 
 ;; (init-load-path "/home/shos/.stumpwm.d/contrib/")
+(defcommand define-hydra (bindings)
+    ((:rest "bindings: "))
+  (let ((k (make-sparse-keymap)))
+    (when  (stringp bindings)
+      (setf bindings (read-from-string bindings)))
+    (mapcar #'(lambda (binding)
+		(funcall #'define-key k (eval (car binding)) (second binding)))
+	    bindings)
+    k))
+
 (load-module "translation-keys")
 
 (translation-keys:define-key-translations "vlc"
@@ -56,28 +66,28 @@
      ("C-RET" "meta n"
 	      ("Next File in Playlist"))))
 
-(translation-keys:define-key-translations "Firefox"
-    (("C-g" "meta ESC")
-     ("C-q" "meta SunPageDown")
-     ("C-v" "meta SunPageDown")
-     ("M-v" "meta SunPageUp")
-     ("C-y" "meta C-v")
-     ("M-w" "meta C-c")
-     ("C-w" "meta C-x")
-     ("C-s" "meta C-f")
-     ("C-r" "meta C-S-g")
-     ("C-n" "meta Down")
-     ("C-p" "meta Up")
-     ("C-f" "meta Right")
-     ("C-b" "meta Left")
-     ("C-B" "meta C-[")
-     ("C-F" "meta C-]")
-     ("M-f" "meta C-t")n
-     ("M-b" "meta C-S-t")
-     ("M-<" "meta Home")
-     ("M->" "meta End")
-     ("M-s" "meta C-l")
-     ("s-f" "meta '")))
+;; (translation-keys:define-key-translations "Firefox"
+;;     (("C-g" "meta ESC")
+;;      ("C-q" "meta SunPageDown")
+;;      ("C-v" "meta SunPageDown")
+;;      ("M-v" "meta SunPageUp")
+;;      ("C-y" "meta C-v")
+;;      ("M-w" "meta C-c")
+;;      ("C-w" "meta C-x")
+;;      ("C-s" "meta C-f")
+;;      ("C-r" "meta C-S-g")
+;;      ("C-n" "meta Down")
+;;      ("C-p" "meta Up")
+;;      ("C-f" "meta Right")
+;;      ("C-b" "meta Left")
+;;      ("C-B" "meta C-[")
+;;      ("C-F" "meta C-]")
+;;      ("M-f" "meta C-t")n
+;;      ("M-b" "meta C-S-t")
+;;      ("M-<" "meta Home")
+;;      ("M->" "meta End")
+;;      ("M-s" "meta C-l")
+;;      ("s-f" "meta '")))
 
 (translation-keys:define-key-trans "Tor Browser"
     `(("C-g" "meta ESC"

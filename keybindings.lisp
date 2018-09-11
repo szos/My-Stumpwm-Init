@@ -64,15 +64,15 @@ this lets you create hydras for related behavior. "
 (defcommand redef-c-q () ()
   (define-key *top-map* (kbd "C-q")
     (define-hydra
-	'((kbd "l") "slimeball")
-	'((kbd "n") "notes")
-      '((kbd "f") "access-floats")
-      '((kbd "F") "access-floats-global")
-      '((kbd "m") "sys-maniper")
-      '((kbd "q") "meta q")
-      '((kbd "t") (define-hydra
-		   '((kbd "t") "toggle-always-on-top")
-		   '((kbd "g") "toggle-always-show"))))))
+	'(((kbd "l") "slimeball")
+	  ((kbd "n") "notes")
+	  ((kbd "f") "access-floats")
+	  ((kbd "F") "access-floats-global")
+	  ((kbd "m") "sys-maniper")
+	  ((kbd "q") "meta q")
+	  ((kbd "t") (define-hydra
+		      '(((kbd "t") "toggle-always-on-top")
+		       ((kbd "g") "toggle-always-show"))))))))
 
 (defcommand redef-c-q-old () ()
   (stumpwm::define-hydra stumpwm::*top-map* (stumpwm::kbd "C-q")
