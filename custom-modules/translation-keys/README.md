@@ -1,7 +1,11 @@
-This is a method of redefining keys in the top map dynamically so as to
-rebind keybinds in applications that dont allow rebinding. If you have
-anything defined in the top map that gets bound in a translation keys
-define-key-translations will be overwritten. to fix this, add those
-keybindings to a command ```redef-top``` which takes no arguments.
-if that command (or function) exists, it will be called when unbinding
-the key translations to add your default bindings. 
+This module provides a macro ```DEFINE-TRANSLATION-KEYS``` which takes a
+window class (as a string), and a set of keymaps in the format of
+```(((kbd "C-w") "meta C-x")
+    ((kbd "C-y") "meta C-v"))```
+These keybindings will get dynamically bound, depending on the class.
+
+Because this binds keys in ```*top-map*```, any keybindings that are
+shared between key translations and the top map will end up unbound.
+to avoid this, define a command or function in the stumpwm package
+called ```redef-top``` containing all top map key bindings. If this
+function exists it will be called after unbinding key translations. 

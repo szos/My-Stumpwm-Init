@@ -469,8 +469,8 @@ based on users global settings"
   "takes a string and returns the result of calling {kbd} 
 with string, or if it isnt valid return nil."
   (handler-case (kbd string)
-	(kbd-parse-error () nil)
-	(kbd-parse () nil)))
+    (kbd-parse-error () nil)
+    (kbd-parse () nil)))
 
 (defun multi-meta (strings &optional (cwin (current-window)))
   "focuses the specified window, checks whether {kbd} errors out, and 

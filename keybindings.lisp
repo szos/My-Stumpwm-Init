@@ -61,7 +61,7 @@ this lets you create hydras for related behavior. "
   (system-manipulation)
   (sys-manip-help))
 
-(defcommand redef-c-q () ()
+(defcommand redef-top () ()
   (define-key *top-map* (kbd "C-q")
     (define-hydra
 	'(((kbd "l") "slimeball")
@@ -72,7 +72,8 @@ this lets you create hydras for related behavior. "
 	  ((kbd "q") "meta q")
 	  ((kbd "t") (define-hydra
 		      '(((kbd "t") "toggle-always-on-top")
-		       ((kbd "g") "toggle-always-show"))))))))
+			((kbd "g") "toggle-always-show")))))))
+  ())
 
 (defcommand redef-c-q-old () ()
   (stumpwm::define-hydra stumpwm::*top-map* (stumpwm::kbd "C-q")
@@ -85,10 +86,6 @@ this lets you create hydras for related behavior. "
     ((stumpwm::kbd "t") (stumpwm::define-lambda-hydra
 			    ((stumpwm::kbd "t") "toggle-always-on-top")
 			    ((stumpwm::kbd "q") "toggle-always-show")))))
-
-(translation-keys:define-key-translations :default
-    (("C-q" "redef-c-q")))
-		    
 
 (define-interactive-keymap brightness-map ()
   ((kbd "=") "brightness-change 1")
