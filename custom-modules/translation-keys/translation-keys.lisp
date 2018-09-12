@@ -98,12 +98,14 @@ the window class, "
       (when (gethash :last-binding *keysets*)
 	(unbind-keyset (gethash (gethash :last-binding *keysets*) *keysets*))
 	(setf (gethash :last-binding *keysets*) nil)
-	(bind-keyset (gethash :default *keysets*)))
+	(when (handler-case (symbol-function 'redef-top)
+		(undefined-function nil))
+	  (stumpwm::redef-top)))
       (when kmap-to-bind
 	(setf *help* (bind-keyset kmap-to-bind)) ;; bind keys here. 
 	(setf (gethash :last-binding *keysets*) (stumpwm:window-class cwin))))))
 
-(defun bind-keyset (kmap)
+(Defun bind-keyset (kmap)
   (if kmap
       (destructuring-bind ((binding command &optional (docs)) &rest others) kmap
 	(stumpwm:define-key stumpwm:*top-map* (stumpwm:kbd binding) command)

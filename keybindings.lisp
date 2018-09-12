@@ -37,6 +37,33 @@ this lets you create hydras for related behavior. "
 	    bindings)
     k))
 
+(defcommand defer-hydra (bindings)
+    ((:rest "bindings: "))
+  (let ((k (gensym)))
+    (setf k (make-sparse-keymap))
+    (when  (stringp bindings)
+      (setf bindings (read-from-string bindings)))
+    (mapcar #'(lambda (binding)
+		  (funcall #'define-key k (eval (car binding)) (second binding)))
+	      bindings)
+    k
+    ;; (let ((k (make-sparse-keymap)))
+    ;;   (when  (stringp bindings)
+    ;; 	(setf bindings (read-from-string bindings)))
+    ;;   (mapcar #'(lambda (binding)
+    ;; 		  (funcall #'define-key k (eval (car binding)) (second binding)))
+    ;; 	      bindings)
+    ;;   k))
+  
+  ;; (let ((k (make-sparse-keymap)))
+  ;;   (when  (stringp bindings)
+  ;;     (setf bindings (read-from-string bindings)))
+  ;;   (mapcar #'(lambda (binding)
+  ;; 		(funcall #'define-key k (eval (car binding)) (second binding)))
+  ;; 	    bindings)
+  ;;   k)
+    ))
+
 (defcommand hydra (bindings key) ((:variable "bindings: ")
 				  (:key "key: "))
   (let ((binds (read-from-string bindings)))
@@ -47,15 +74,17 @@ this lets you create hydras for related behavior. "
 
 (define-key *top-map* (kbd "C-q")
   (define-hydra
-      '(((kbd "l") "slimeball")
+      `(((kbd "l") "slimeball")
+	((kbd "r") "replball")
 	((kbd "n") "notes")
 	((kbd "f") "access-floats")
 	((kbd "F") "access-floats-global")
+	((kbd "s") "snap-floating-windows")
 	((kbd "m") "sys-maniper")
 	((kbd "q") "meta q")
-	((kbd "t") (define-hydra
-		    (((kbd "t") "toggle-always-on-top")
-		     ((kbd "g") "toggle-always-show")))))))
+	((kbd "t") ,(define-hydra
+			'(((kbd "t") "toggle-always-on-top")
+			  ((kbd "g") "toggle-always-show")))))))
 
 (defcommand sys-maniper () ()
   (system-manipulation)

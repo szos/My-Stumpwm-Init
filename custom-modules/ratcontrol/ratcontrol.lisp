@@ -54,6 +54,7 @@ Be aware that these commands won't require a prefix to run."
 (defvar *resolution* '(1920 1080))
 (defparameter *x-min-max* '(0 1920))
 (defparameter *y-min-max* '(0 1080))
+(defparameter *tracker* nil)
 ;; (defparameter *iterative-jumps* '(10 70 200))
 
 ;; Functions
@@ -166,6 +167,10 @@ typing and allow one work with text editors that arent keyboard driven"
   ((kbd "M-h") "ratcontrol-help"))
 
 (define-interactive-keymap-no-return ratcontrol-typing (:on-enter #'binary-ratwarp-init
+								  :on-enter #'(lambda ()
+										(setf *tracker* t)) 
+								  ;; :on-exit #'(lambda ()
+								  ;; 	       (meta "ESC"))
 								  :on-exit #'banish)
   "a keymap for ratcontrol. designed to stay out of the way of
 typing and allow one work with text editors that arent keyboard driven"
