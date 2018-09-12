@@ -14,7 +14,8 @@
   (gnewbg "Media")
   (gnewbg "Dev")
   (run-shell-command "nm-applet")
-  (run-shell-command "./pia.sh"))
+  (run-shell-command "./pia.sh")
+  (run-shell-command "blueman-applet"))
 
 (defcommand pulley (search-term) ((:string "search term:  "))
   (when-let ((win (fuzzy-finder `((:class ,search-term)))))

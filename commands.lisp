@@ -535,3 +535,15 @@ and assign it to the argument provided."
   (with-open-window "cool-retro-term -e alsamixer" "cool-retro-term" #'reclassify-window "Alsamixer")
   ;; (run-with-timer .5 nil 'rename-current-windows-class "cool-retro-term" "AlsaMixer")
 )
+
+(defcommand restart-pia () ()
+  (with-open-window "cool-retro-term" "cool-retro-term"
+		    #'(lambda (cwin)
+			(multi-meta '("killall ruby"
+				     "RET" "cd" "RET"
+				     "./pia.sh" "RET")
+				    cwin))))
+
+;; (run-with-timer 60 60 #'(lambda ()
+;; 			  (notes)
+;; 			  (multi-meta "(room nil)" "RET")))

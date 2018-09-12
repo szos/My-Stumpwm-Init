@@ -19,11 +19,14 @@
 
 ;; ;; change the prefix key to something else
 (set-prefix-key (kbd "C-;"))
+;; (set-prefix-key (kbd "s"))
 ;; properly
 (define-key *root-map* (kbd ";") "colon") ;; needed for some reason. 
 
 ;; ;;swap caps and ctrl
 ;; (run-shell-command "setxkbmap -option ctrl:swapcaps")
+
+(run-shell-command "xmodmap ~/.stumpwm.d/kcode.modmap")
 
 (set-module-dir "/home/shos/.stumpwm.d/")
 ;;(add-to-load-path "~/.stumpwm.d/custom-modules/ratcontrol/")
@@ -126,8 +129,32 @@
 	     ("pull current tab left"))
       ("M-F" "meta C-S-SunPageDown"
 	     ("Pull current tab right"))
-      ("M-r" "ratcontrol-typing"
-	     ("starts ratcontrol without <RET> bound to exit interactive keymap."))
+      ;; ("M-r" "ratcontrol-typing"
+      ;; 	     ("starts ratcontrol without <RET> bound to exit interactive keymap."))
+      ("M-r" "ratsnap"
+	     ("hyper rat. prompt for direction and ammount"))
+      ("H-j" "ratsnap left 75"
+	     ("hyper rat. move pointer left by 75 pixles."))
+      ("H-k" "ratsnap down 75"
+	     ("hyper rat. move pointer down by 75 pixles."))
+      ("H-l" "ratsnap right 75"
+	     ("hyper rat. move pointer right by 75 pixles"))
+      ("H-i" "hyper-ratsnap up 75"
+	     ("hyper rat. move pointer up by 75 pixles."))
+      ("H-J" "hyper-ratsnap left 20"
+	     ("hyper rat. move pointer left by 20 pixles."))
+      ("H-K" "hyper-ratsnap down 20"
+	     ("hyper rat. move pointer down by 20 pixles."))
+      ("H-L" "hyper-ratsnap right 20"
+	     ("hyper rat. move pointer right by 20 pixles"))
+      ("H-I" "hyper-ratsnap up 20"
+	     ("hyper rat. move pointer up by 20 pixles."))
+      ("H-SPC" "ratclick 1"
+	       ("ratclick left click"))
+      ("H-s-SPC" "ratclick 2"
+		 ("ratclick right click"))
+      ("s-SPC" "ratclick 3"
+	       ("ratclick middle click"))
       ("C-x" ,(define-hydra
 		  '(((kbd "C-c") "meta C-q") ;; quit
 		    ((kbd "k") "meta C-w") ;; close tab
@@ -185,7 +212,9 @@
 (setf *mode-line-border-color* (seventh *colors*))
 
 (setf *screen-mode-line-format*
-      (list "^6^B%B^b | %c%t %f | %l|[%M] %N| Volume: " 
+      (list "^6^B%B^b | %c%t %f | %l|[%M] %N| Room: "
+	    ;;'(:eval (room nil))
+	    "Volume: " 
 	    '(:eval *volume-readout*)
 	    '(:eval *volume-overdrive*)
 	    "[===^3===^1=*^7---]^6 %d

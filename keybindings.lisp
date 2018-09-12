@@ -5,18 +5,29 @@
 which lets you create something like a prefix key. for example if you want to 
 bind a command to 'prefix C-x n' youd write 
 
-(define-hydra *root-map* (kbd \"C-x\")
-  ((kbd \"n\") command)) 
+;;(define-hydra *root-map* (kbd \"C-x\")
+;;  ((kbd \"n\") command)) 
 
 this lets you create hydras for related behavior. "
-  (let ((bind-to-m (mapcar #'(lambda (bind)
-			       (push 'm bind)
-			       (push 'define-key bind))
-			   bindings)))
+  (let* ((m (gensym))
+	 (bind-to-m (mapcar #'(lambda (bind)
+				(push m bind)
+				(push 'define-key bind))
+			    bindings)))
     `(define-key ,map ,key
-       (let ((m (make-sparse-keymap)))
+       (let ((,m (make-sparse-keymap)))
 	 ,@bind-to-m
-	 m))))
+	 ,m))))
+
+(defmacro defhydra (&rest bindings)
+    (let* ((m (gensym))
+	   (bind-to-m (mapcar #'(lambda (bind)
+				  (push m bind)
+				  (push 'define-key bind))
+			      bindings)))
+      `(let ((,m (make-sparse-keymap)))
+	 ,@bind-to-m
+	 ,m)))
 
 (defmacro define-lambda-hydra (&rest bindings)
   (let ((bind-to-m (mapcar #'(lambda (bind)
@@ -37,84 +48,41 @@ this lets you create hydras for related behavior. "
 	    bindings)
     k))
 
-(defcommand defer-hydra (bindings)
-    ((:rest "bindings: "))
+(defmacro defer-hydra-macro (bindings)
   (let ((k (gensym)))
-    (setf k (make-sparse-keymap))
-    (when  (stringp bindings)
-      (setf bindings (read-from-string bindings)))
-    (mapcar #'(lambda (binding)
-		  (funcall #'define-key k (eval (car binding)) (second binding)))
-	      bindings)
-    k
-    ;; (let ((k (make-sparse-keymap)))
-    ;;   (when  (stringp bindings)
-    ;; 	(setf bindings (read-from-string bindings)))
-    ;;   (mapcar #'(lambda (binding)
-    ;; 		  (funcall #'define-key k (eval (car binding)) (second binding)))
-    ;; 	      bindings)
-    ;;   k))
-  
-  ;; (let ((k (make-sparse-keymap)))
-  ;;   (when  (stringp bindings)
-  ;;     (setf bindings (read-from-string bindings)))
-  ;;   (mapcar #'(lambda (binding)
-  ;; 		(funcall #'define-key k (eval (car binding)) (second binding)))
-  ;; 	    bindings)
-  ;;   k)
-    ))
+    `(let ((,k (make-sparse-keymap))
+	   (bb ',bindings))
+       (when (stringp bb)
+	  (setf bb (read-from-string bb)))
+       (mapcar #'(lambda (binding)
+		   (funcall #'define-key ,k (eval (car binding)) (second binding)))
+	       bb)
+       ,k)))
 
-(defcommand hydra (bindings key) ((:variable "bindings: ")
-				  (:key "key: "))
-  (let ((binds (read-from-string bindings)))
-    (mapcar #'(lambda (binding)
-		(when (eql key (car binding))
-		  (cadr binding)))
-	    binds)))
+(defcommand redef-top () ()
+  (define-key *top-map* (kbd "C-q")
+    *top-redef*))
+
+(defparameter *top-redef*
+  (defhydra
+      ((kbd "l") "slimeball")
+      ((kbd "r") "replball")
+    ((kbd "n") "notes")
+    ((kbd "f") "access-floats")
+    ((kbd "F") "access-floats-global")
+    ((kbd "s") "snap-floating-windows")
+    ((kbd "m") "sys-maniper")
+    ((kbd "q") "meta q")
+    ((kbd "t") (defhydra
+		   ((kbd "t") "toggle-always-on-top")
+		   ((kbd "g") "toggle-always-show")))))
 
 (define-key *top-map* (kbd "C-q")
-  (define-hydra
-      `(((kbd "l") "slimeball")
-	((kbd "r") "replball")
-	((kbd "n") "notes")
-	((kbd "f") "access-floats")
-	((kbd "F") "access-floats-global")
-	((kbd "s") "snap-floating-windows")
-	((kbd "m") "sys-maniper")
-	((kbd "q") "meta q")
-	((kbd "t") ,(define-hydra
-			'(((kbd "t") "toggle-always-on-top")
-			  ((kbd "g") "toggle-always-show")))))))
+  *top-redef*)
 
 (defcommand sys-maniper () ()
   (system-manipulation)
   (sys-manip-help))
-
-(defcommand redef-top () ()
-  (define-key *top-map* (kbd "C-q")
-    (define-hydra
-	'(((kbd "l") "slimeball")
-	  ((kbd "n") "notes")
-	  ((kbd "f") "access-floats")
-	  ((kbd "F") "access-floats-global")
-	  ((kbd "m") "sys-maniper")
-	  ((kbd "q") "meta q")
-	  ((kbd "t") (define-hydra
-		      '(((kbd "t") "toggle-always-on-top")
-			((kbd "g") "toggle-always-show")))))))
-  ())
-
-(defcommand redef-c-q-old () ()
-  (stumpwm::define-hydra stumpwm::*top-map* (stumpwm::kbd "C-q")
-    ((stumpwm::kbd "l") "slimeball")
-    ((stumpwm::kbd "n") "notes")
-    ((stumpwm::kbd "f") "access-floats")
-    ((stumpwm::kbd "F") "access-floats-global")
-    ((stumpwm::kbd "m") "sys-maniper")
-    ((stumpwm::kbd "q") "meta q")
-    ((stumpwm::kbd "t") (stumpwm::define-lambda-hydra
-			    ((stumpwm::kbd "t") "toggle-always-on-top")
-			    ((stumpwm::kbd "q") "toggle-always-show")))))
 
 (define-interactive-keymap brightness-map ()
   ((kbd "=") "brightness-change 1")
@@ -199,6 +167,7 @@ this lets you create hydras for related behavior. "
 ;; define system keys. 
 (define-key *top-map* (kbd "XF86AudioRaiseVolume") "volume 10")
 (define-key *top-map* (kbd "XF86AudioLowerVolume") "volume -10")
+(define-key *top-map* (kbd "XF86AudioMute") "vol-reset")
 (define-key *top-map* (kbd "XF86MonBrightnessDown") "brightness-change -1")
 (define-key *top-map* (kbd "XF86MonBrightnessUp") "brightness-change 1")
 
