@@ -12,7 +12,8 @@
 (setf *timeout-wait* 15)
 
 ;; ;;set startup message
-(setf *startup-message* (machine-instance))
+(setf *startup-message* (concatenate 'string "SHOS@" (machine-instance) " | "
+				     "Initializing"))
 
 ;; ;; put message window and input window in the center
 (setf *message-window-gravity* :top)
@@ -27,6 +28,7 @@
 ;; (run-shell-command "setxkbmap -option ctrl:swapcaps")
 
 (run-shell-command "xmodmap ~/.stumpwm.d/kcode.modmap")
+(run-shell-command "xscreensaver")
 
 (set-module-dir "/home/shos/.stumpwm.d/")
 ;;(add-to-load-path "~/.stumpwm.d/custom-modules/ratcontrol/")
@@ -139,15 +141,15 @@
 	     ("hyper rat. move pointer down by 75 pixles."))
       ("H-l" "ratsnap right 75"
 	     ("hyper rat. move pointer right by 75 pixles"))
-      ("H-i" "hyper-ratsnap up 75"
+      ("H-i" "ratsnap up 75"
 	     ("hyper rat. move pointer up by 75 pixles."))
-      ("H-J" "hyper-ratsnap left 20"
+      ("H-J" "ratsnap left 20"
 	     ("hyper rat. move pointer left by 20 pixles."))
-      ("H-K" "hyper-ratsnap down 20"
+      ("H-K" "ratsnap down 20"
 	     ("hyper rat. move pointer down by 20 pixles."))
-      ("H-L" "hyper-ratsnap right 20"
+      ("H-L" "ratsnap right 20"
 	     ("hyper rat. move pointer right by 20 pixles"))
-      ("H-I" "hyper-ratsnap up 20"
+      ("H-I" "ratsnap up 20"
 	     ("hyper rat. move pointer up by 20 pixles."))
       ("H-SPC" "ratclick 1"
 	       ("ratclick left click"))
@@ -157,7 +159,8 @@
 	       ("ratclick middle click"))
       ("C-x" ,(define-hydra
 		  '(((kbd "C-c") "meta C-q") ;; quit
-		    ((kbd "k") "meta C-w") ;; close tab
+		    ;; ((kbd "k") "meta C-w") ;; close tab
+		    ((kbd "k") "kill-prompt \"close window?: \" \"meta C-w\"")
 		    ((kbd "K") "meta C-S-w") ;; close window
 		    ((kbd "1") "meta C-1") 
 		    ((kbd "2") "meta C-2")

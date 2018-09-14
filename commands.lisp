@@ -532,9 +532,7 @@ and assign it to the argument provided."
   (when role (setf (window-role window) role)))
 
 (defcommand alsamixer () ()
-  (with-open-window "cool-retro-term -e alsamixer" "cool-retro-term" #'reclassify-window "Alsamixer")
-  ;; (run-with-timer .5 nil 'rename-current-windows-class "cool-retro-term" "AlsaMixer")
-)
+  (with-open-window "cool-retro-term -e alsamixer" "cool-retro-term" #'reclassify-window "Alsamixer"))
 
 (defcommand restart-pia () ()
   (with-open-window "cool-retro-term" "cool-retro-term"
@@ -547,3 +545,40 @@ and assign it to the argument provided."
 ;; (run-with-timer 60 60 #'(lambda ()
 ;; 			  (notes)
 ;; 			  (multi-meta "(room nil)" "RET")))
+
+
+(defcommand kill-prompt (thing body)
+    ((:string "prompt: ")
+     (:string "things to do: "))
+  (let ((b (read-from-string body)))
+    (when (prompt-to-kill thing)
+      ;; (mapcar #'(lambda (x)
+      ;; 		  (if (cdr x)
+      ;; 		      (funcall (car x) (cdr x))
+      ;; 		      (funcall (car x))))
+      ;; 	      b)
+      ;; (if (cdr b)
+      ;; 	  (funcall (car b) (cdr b))
+      ;; 	  (funcall (car b)))
+      (message "~S" b))))
+
+(defmacro kill-on-prompt (thing &body body)
+  `(when (prompt-to-kill ,thing)
+     ,@body))
+
+(defun prompt-to-kill (thing-to-kill)
+  (let ((prompt (read-one-line (current-screen) (format nil "Kill ~a?: " thing-to-kill))))
+    (cond ((string= prompt "Y")
+	   t)
+	  ((string= prompt "y")
+	   t)
+	  ((string= prompt "yes")
+	   t)
+	  ((string= prompt "Yes")
+	   t)
+	  ((string= prompt "YES")
+	   t)
+	  (t
+	   nil))))
+
+(message "~S" (prompt-to-kill "helper"))

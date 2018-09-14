@@ -170,5 +170,8 @@ this lets you create hydras for related behavior. "
 (define-key *top-map* (kbd "XF86AudioMute") "vol-reset")
 (define-key *top-map* (kbd "XF86MonBrightnessDown") "brightness-change -1")
 (define-key *top-map* (kbd "XF86MonBrightnessUp") "brightness-change 1")
+(define-key *top-map* (kbd "SunPrint_Screen") "screenshot")
+
+;; (define-key *top-map* (kbd "H-:") "window-send-string Ø")
 
 (define-key *root-map* (kbd "C-d") "describe-key");;
