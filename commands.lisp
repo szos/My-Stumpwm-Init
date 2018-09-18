@@ -209,11 +209,6 @@ based on users global settings"
 (defcommand waterfox-f () ()
   (with-open-window "waterfox" nil #'float-window (current-group)))
 
-(defun wfx (&optional (args nil))
-  (if (not args)
-      (run-shell-command "waterfox")
-      (run-shell-command (concatenate 'string "waterfox " args))))
-
 (defcommand youtube () ()
   "raise the firefox window open to youtube, or open a new window/tab open to youtube"
   (run-or-raise-or-list "waterfox https://youtube.com" '((:title "YouTube"))))
@@ -264,9 +259,6 @@ based on users global settings"
   "raise a list of all the browsers open"
   (fuzzy-finder '((:class "Firefox") (:class "Icecat") (:class "Conkeror"))))
 
-(defcommand riot () ()
-	    (exec riot-desktop))
-
 ;;; specific webpages (using fuzzy-finder)
 ;; (defcommand youtube () ()
 ;;   "find YouTube in the title field."
@@ -283,9 +275,20 @@ based on users global settings"
 (defcommand Riot () ()
   (run-raise "riot-desktop" "Riot"))
 
+(defcommand wpull (search) ((:string "Class to Pull: "))
+  (if-let ((win (fuzzy-finder `((:class ,search)))))
+    (pull win)
+    (message "No Matching Windows Found")))
+
 ;;; Media
 (defcommand vlc () ()
   (run-or-raise-or-list "vlc" '((:class "vlc"))))
+
+(defcommand parole-media () ()
+  (run-raise "parole" "Parole"))
+
+(defcommand parole-media-new-instance () ()
+  (run-shell-command "parole -i"))
 
 (defcommand mpv-minimal () ()
   "run mpv with the pseudo-gui frontend"
@@ -329,8 +332,7 @@ based on users global settings"
   (run-raise-or-list "kdenlive" '(:class "Video Editor")))
 
 (defcommand temp-sensors () ()
-  (run-or-raise-or-list "xfce4-sensors" '((:class "Xfce4-sensors")))
-  (run-with-timer .5 nil 'float-this))
+  (run-or-raise-or-list "xfce4-sensors" '((:class "Xfce4-sensors"))))
 
 (defcommand menu () () ;; this isnt working for some reason
   (run-raise-or-list "menulibre" '(:class "Menu")))
@@ -360,13 +362,17 @@ based on users global settings"
   (run-raise-or-list "galculator" '(:class "Utility")))
 (defcommand keepass () () 
   (run-raise-or-list "keepass" '(:class "Utility")))
-(defcommand lightdm-settings () () 
-  (run-raise-or-list "lightdm-gtk-greeter-settings-pkexec" '(:class "Setting")))
+(defcommand lem () ()
+  (if-let ((win (fuzzy-finder '((:class "Lem")))))
+    (raise win)
+    (with-open-window "xfce4-terminal -e ./.roswell/bin/lem" nil
+  		      #'(lambda (cwin)
+  			  (setf (window-class cwin) "Lem")))))
+
 (defcommand mousepad () ()
   ;;; (with-open-window "mousepad" nil #'float-in-tiles)
   (run-shell-command "mousepad"))
 (defcommand mouse-notes () ()
-  "this doesnt work!!"
   (with-open-window '("mousepad" "vsplit") nil #'(lambda (cwin)
 						   (float-in-tiles cwin
 								   :new-class
@@ -418,7 +424,7 @@ based on users global settings"
 					"slime-connect" "RET" "RET" "DEL"
 					"6" "RET")
 				      cwin)
-			  (run-with-timer 1 nil
+			  (run-with-timer 2 nil
 					  #'(lambda ()
 					      (multi-meta
 					       '("(in-package :stumpwm)" "RET"
@@ -452,14 +458,6 @@ based on users global settings"
 					 partition " " mount-point)
 			    "RET" ,password "RET")
 			 cwin)
-			(run-with-timer .5 nil #'meta (kbd "C-Q")))))
-
-(defcommand mount-data (pwd) ((:password "password: "))
-  (with-open-window "cool-retro-term" nil
-		    #'(lambda (cwin)
-			(multi-meta `("sudo mount /dev/sda3 /home/shos/Data"
-				      "RET" ,pwd "RET")
-				    cwin)
 			(run-with-timer .5 nil #'meta (kbd "C-Q")))))
 
 (define-condition kbd-parse ()
@@ -497,11 +495,17 @@ either sends the {kbd} result or "
 							 :width w :height h)))))
 
 (defcommand portacle-instance () ()
-  (with-open-window "sh /home/shos/LISP/portacle/portacle.run" "Emacs" #'reclassify-window "Portacle"))
+  (with-open-window "sh /home/shos/LISP/portacle/portacle.run" "Emacs"
+		    #'reclassify-window "Portacle"))
 
 ;;;begin pacman and other system bits
-( defcommand update-system () ()
-  (run-shell-command "xfce4-terminal -e sudo pacman -Syu"))
+(defcommand update-system (pwd) ((:password "PWD: "))
+  (with-open-window "xfce4-terminal" "Xfce4-terminal"
+		    #'(lambda (cwin);;sudo pacman -Syu
+			(multi-meta `("sudo pacman -Syu" "RET" ,pwd "RET") cwin))))
+
+(defcommand gparted () ()
+  (run-shell-command "gparted"))
 
 ;; Games
 (defcommand feed-the-beast () () 
@@ -534,6 +538,9 @@ and assign it to the argument provided."
 (defcommand alsamixer () ()
   (with-open-window "cool-retro-term -e alsamixer" "cool-retro-term" #'reclassify-window "Alsamixer"))
 
+(defcommand pulse-audio () ()
+  (run-raise "pavucontrol" "Pavucontrol"))
+
 (defcommand restart-pia () ()
   (with-open-window "cool-retro-term" "cool-retro-term"
 		    #'(lambda (cwin)
@@ -542,43 +549,4 @@ and assign it to the argument provided."
 				     "./pia.sh" "RET")
 				    cwin))))
 
-;; (run-with-timer 60 60 #'(lambda ()
-;; 			  (notes)
-;; 			  (multi-meta "(room nil)" "RET")))
 
-
-(defcommand kill-prompt (thing body)
-    ((:string "prompt: ")
-     (:string "things to do: "))
-  (let ((b (read-from-string body)))
-    (when (prompt-to-kill thing)
-      ;; (mapcar #'(lambda (x)
-      ;; 		  (if (cdr x)
-      ;; 		      (funcall (car x) (cdr x))
-      ;; 		      (funcall (car x))))
-      ;; 	      b)
-      ;; (if (cdr b)
-      ;; 	  (funcall (car b) (cdr b))
-      ;; 	  (funcall (car b)))
-      (message "~S" b))))
-
-(defmacro kill-on-prompt (thing &body body)
-  `(when (prompt-to-kill ,thing)
-     ,@body))
-
-(defun prompt-to-kill (thing-to-kill)
-  (let ((prompt (read-one-line (current-screen) (format nil "Kill ~a?: " thing-to-kill))))
-    (cond ((string= prompt "Y")
-	   t)
-	  ((string= prompt "y")
-	   t)
-	  ((string= prompt "yes")
-	   t)
-	  ((string= prompt "Yes")
-	   t)
-	  ((string= prompt "YES")
-	   t)
-	  (t
-	   nil))))
-
-(message "~S" (prompt-to-kill "helper"))

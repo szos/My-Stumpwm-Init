@@ -139,7 +139,8 @@ this lets you create hydras for related behavior. "
 ;; (define-key *root-map* (kbd "M-j") "group-hop")
 ;; Implement remove split, maybe remove split horizontal and 
 ;; vertical
-(define-key *root-map* (kbd "C-r") "balanced-remove-split") ; removes split and switches to previous 
+(define-key *root-map* (kbd "C-r") "balanced-remove-split") ; removes split and switches to previous
+(define-key *root-map* (kbd "r") "remove")
 ;; (define-)
 ;; switching layouts
 ;; (define-key *root-map* (kbd "C-l") "change-kb-layout")
@@ -172,6 +173,8 @@ this lets you create hydras for related behavior. "
 (define-key *top-map* (kbd "XF86MonBrightnessUp") "brightness-change 1")
 (define-key *top-map* (kbd "SunPrint_Screen") "screenshot")
 
-;; (define-key *top-map* (kbd "H-:") "window-send-string Ø")
+;; (define-key *top-map* (kbd "s-:") "window-send-string Ø")
+;; (define-key *top-map* (kbd "s-;") "window-send-string \"ø\"")
 
+;; øØ æÆ åÅ 
 (define-key *root-map* (kbd "C-d") "describe-key");;

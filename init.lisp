@@ -27,8 +27,11 @@
 ;; ;;swap caps and ctrl
 ;; (run-shell-command "setxkbmap -option ctrl:swapcaps")
 
+;; initialize system
 (run-shell-command "xmodmap ~/.stumpwm.d/kcode.modmap")
 (run-shell-command "xscreensaver")
+(run-shell-command "/usr/lib/notification-daemon-1.0/notification-daemon")
+(run-shell-command "/usr/bin/lxqt-policykit-agent")
 
 (set-module-dir "/home/shos/.stumpwm.d/")
 ;;(add-to-load-path "~/.stumpwm.d/custom-modules/ratcontrol/")
@@ -159,8 +162,8 @@
 	       ("ratclick middle click"))
       ("C-x" ,(define-hydra
 		  '(((kbd "C-c") "meta C-q") ;; quit
-		    ;; ((kbd "k") "meta C-w") ;; close tab
-		    ((kbd "k") "kill-prompt \"close window?: \" \"meta C-w\"")
+		    ((kbd "k") "meta C-w") ;; close tab
+		    ;; ((kbd "k") "kill-prompt \"close window?: \" \"meta C-w\"")
 		    ((kbd "K") "meta C-S-w") ;; close window
 		    ((kbd "1") "meta C-1") 
 		    ((kbd "2") "meta C-2")
