@@ -166,9 +166,13 @@ this lets you create hydras for related behavior. "
 ;; volume
 
 ;; define system keys. 
-(define-key *top-map* (kbd "XF86AudioRaiseVolume") "volume 10")
-(define-key *top-map* (kbd "XF86AudioLowerVolume") "volume -10")
+(define-key *top-map* (kbd "XF86AudioRaiseVolume") "volume 5")
+(define-key *top-map* (kbd "XF86AudioLowerVolume") "volume -5")
 (define-key *top-map* (kbd "XF86AudioMute") "vol-reset")
+
+(define-key *top-map* (kbd "M-XF86AudioRaiseVolume") "volume-overdrive 200")
+(define-key *top-map* (kbd "M-XF86AudioLowerVolume") "volume-overdrive 150")
+(define-key *top-map* (kbd "M-XF86AudioMute") "volume-overdrive 100")
 (define-key *top-map* (kbd "XF86MonBrightnessDown") "brightness-change -1")
 (define-key *top-map* (kbd "XF86MonBrightnessUp") "brightness-change 1")
 (define-key *top-map* (kbd "SunPrint_Screen") "screenshot")
@@ -178,3 +182,111 @@ this lets you create hydras for related behavior. "
 
 ;; øØ æÆ åÅ 
 (define-key *root-map* (kbd "C-d") "describe-key");;
+
+
+;;;; load translation keys
+(load-module "translation-keys")
+
+(translation-keys:define-key-translations "vlc"
+    (("C-p" "meta Up"
+	    ("Increase Volume"))
+     ("C-n" "meta Down"
+	    ("Decrease Volume"))
+     ("C-f" "meta S-Right"
+	    ("FF 3 seconds"))
+     ("C-b" "meta S-Left"
+	    ("RW 3 seconds"))
+     ("M-f" "meta M-Right"
+	    ("FF 10 seconds"))
+     ("M-b" "meta M-Left"
+	    ("RW 10 seconds"))
+     ("C-M-f" "meta C-Right"
+	      ("FF 1 Minute"))
+     ("C-M-b" "meta C-Left"
+	      ("RW 1 Minute"))
+     ;; ("C-x C-f" "meta C-o"
+     ;; 		("open media"))
+     ("C-RET" "meta n"
+	      ("Next File in Playlist"))))
+
+(translation-keys:define-key-trans "Tor Browser"
+    `(("C-g" "meta ESC"
+	     ("quit/escape"))
+      ("M-<" "meta Home"
+     	     ("go to top of page"))
+      ("M->" "meta End"
+     	     ("go to bottom of page"))
+      ("C-v" "meta SunPageDown"
+     	     ("Page down"))
+      ("M-v" "meta SunPageUp"
+     	     ("page up"))
+      ("M-w" "meta C-c"
+     	     ("copy selected text"))
+      ("C-w" "meta C-x"
+     	     ("cut selected test"))
+      ("C-y" "meta C-v"
+     	     ("paste selected text."))
+      ("C-s" "meta C-g"
+     	     ("search forward."))
+      ("C-r" "meta C-G"
+     	     ("search backward"))
+      ("C-n" "meta Down"
+     	     ("send a down arrow key. figure out how to differentiate..."))
+      ("C-p" "meta Up"
+     	     ("send an up arrow"))
+      ("C-M-b" "meta C-["
+     	       ("navigate backwards one page in history"))
+      ("C-M-f" "meta C-]"
+      	       ("navigate forwards one page in history"))
+      ("M-f" "meta C-TAB"
+	     ("move forward one tab"))
+      ("M-b" "meta C-S-TAB"
+	     ("move backward one tab"))
+      ("M-B" "meta C-S-SunPageUp"
+	     ("pull current tab left"))
+      ("M-F" "meta C-S-SunPageDown"
+	     ("Pull current tab right"))
+      ;; ("M-r" "ratcontrol-typing"
+      ;; 	     ("starts ratcontrol without <RET> bound to exit interactive keymap."))
+      ("M-r" "ratsnap"
+	     ("hyper rat. prompt for direction and ammount"))
+      ("H-j" "ratsnap left 75"
+	     ("hyper rat. move pointer left by 75 pixles."))
+      ("H-k" "ratsnap down 75"
+	     ("hyper rat. move pointer down by 75 pixles."))
+      ("H-l" "ratsnap right 75"
+	     ("hyper rat. move pointer right by 75 pixles"))
+      ("H-i" "ratsnap up 75"
+	     ("hyper rat. move pointer up by 75 pixles."))
+      ("H-J" "ratsnap left 20"
+	     ("hyper rat. move pointer left by 20 pixles."))
+      ("H-K" "ratsnap down 20"
+	     ("hyper rat. move pointer down by 20 pixles."))
+      ("H-L" "ratsnap right 20"
+	     ("hyper rat. move pointer right by 20 pixles"))
+      ("H-I" "ratsnap up 20"
+	     ("hyper rat. move pointer up by 20 pixles."))
+      ("H-SPC" "ratclick 1"
+	       ("ratclick left click"))
+      ("H-s-SPC" "ratclick 2"
+		 ("ratclick right click"))
+      ("s-SPC" "ratclick 3"
+	       ("ratclick middle click"))
+      ("C-x" ,(define-hydra
+		  '(((kbd "C-c") "meta C-q") ;; quit
+		    ((kbd "k") "meta C-w") ;; close tab
+		    ;; ((kbd "k") "kill-prompt \"close window?: \" \"meta C-w\"")
+		    ((kbd "K") "meta C-S-w") ;; close window
+		    ((kbd "1") "meta C-1") 
+		    ((kbd "2") "meta C-2")
+		    ((kbd "u") "meta C-T") ;; undo close tab
+		    ((kbd "C-f") "meta '") ;; search text in links
+		    ((kbd "n") "meta C-n") ;; new window
+		    ((kbd "p") "meta C-S-p") ;; new private window
+		    ((kbd "x") "meta F6") ;; cycle browser frame
+		    ((kbd "C-x") "meta S-F6")
+		    ((kbd "+") "meta C-+") ;; zoom in 
+		    ((kbd "-") "meta C--") ;; zoom out
+		    ((kbd "=") "meta C-0") ;; reset zoom
+		    ((kbd "0") "meta C-0")))
+	     ("this is a hydra, defining C-c as quit, etc..."))))

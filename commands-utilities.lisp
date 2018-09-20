@@ -35,7 +35,46 @@
   (funcall *layout*))
 ;; set up bightness control
 ;; set up a closure based implementation:
+(defun bright-readout-set (amnt)
+  "helper for brightness. this just resets the brightness readout
+for the mode line. "
+  (cond ((>= amnt 100)
+	 (setf *brightness-mode-line* (format nil "^B100^b")))
+	((<= amnt 0)
+	 (setf *brightness-mode-line* (format nil "^B  0^b")))
+	(t
+	 (cond ((< amnt 10)
+		(setf *brightness-mode-line* (format nil "^B  ~D%^b" amnt)))
+	       ((and (>= amnt 10) (< amnt 100))
+		(setf *brightness-mode-line* (format nil "^B ~D%^b" amnt)))
+	       (t
+		(setf *brightness-mode-line* (format nil "^B~D%^b" amnt))))))
+  (message "Brightness: ~D%" amnt))
 
+(defun abso (x)
+  (if (< x 0)
+      (+ x x x)
+      x))
+
+(defun brightness-setter ()
+  (run-shell-command "xbacklight -inc 100")
+  (let ((level 100))
+    (lambda (change)
+      (cond ((< change 0)
+	     ;; decrement and check if 0
+	     ())
+	    ((> change 0)
+	     ;; increment and check if 100
+	     )
+	    ((>= (+ level change) 100)
+	     (setf *brightness-mode-line* (format nil "^B100^b"))
+	     (run-shell-command "xbacklight -inc 100"))
+	    ((< (+ level change) 10)
+	     (run-shell-command (format nil "xbacklight -dec ~D" (abs change)))
+	     (setf *brightness-mode-line* (format nil "^B  0^b")))
+	    (t
+	     ())
+	    ))))
 (defun brightness ()
   (run-shell-command "xbacklight -inc 100")
   (let ((level 100))
@@ -44,34 +83,38 @@
 	     (progn
 	       (unless (>= level 100) 
 		 (run-shell-command "xbacklight -inc 10")
-		 (setf level (+ level 10)))
-	       (message "Brightness: ~D%" level)
-	       (sleep .2)))
+		 (setf level (+ level 10))
+		 (setf *brightness-mode-line* (format nil "")))))
 	    ((= inter -1) ;;decrease brightness
 	     (unless (<= level 0)
 	       (run-shell-command "xbacklight -dec 10")
-	       (setf level (- level 10)))
-	     (message "Brightness: ~D%" level)
-	     (sleep .2))
+	       (setf level (- level 10))))
 	    ((= inter 0) ;; go to 1% brightness
 	     (setf level 1)
 	     (run-shell-command "xbacklight -dec 100")
-	     (sleep .2)
-	     (run-shell-command "xbacklight -inc 1")
-	       )
+	     (sleep .2))
 	    ((= inter 2) ;; reset to 10% brightness
 	     (setf level 10)
 	     (run-shell-command "xbacklight -dec 100")
 	     (sleep .2)
-	     (run-shell-command "xbacklight -inc 10")
-	     (message "Brightness: ~D%" level))
+	     (run-shell-command "xbacklight -inc 10"))
 	    (t
-	     (message "Brightness: ~D%" level))))))
+	     nil))
+      (setf *brightness-mode-line* (format nil "Brightness: ~a%"
+					   (cond ((< level 10)
+						  (format nil "  ~D" level))
+						 ((= level 100)
+						  "100")
+						 (t
+						  (format nil " ~D" level)))))
+      nil)))
 
 (defparameter *brightness* (brightness))
+(defparameter *brightness-mode-line* "100")
 
 (defcommand brightness-change (inc) ((:number "1, 0, -1, or 2: "))
-  (funcall *brightness* inc))
+  (let ((*timeout-wait* 1))
+    (funcall *brightness* inc)))
 
 (defcommand brightness-reset () ()
   (funcall *brightness* 2))
@@ -80,78 +123,91 @@
 ;; make another closure called overdrive, which when we increase nmax
 ;; in the volume closure, we instead get thrown to overdrive which
 ;; displays how far over 100% we are instead of our normal volume bar.
+(defparameter *volume-percentage* "Volume:   0% ")
 
 (defun volume-setter ()
+  "this function generates a closure for controlling volume via the shell 
+command \"pactl set-sink-volume 0\". this closure also interacts with the 
+dynamic variable *volume-percentage*, which is designed to be evaluated in 
+the mode line to show the volume "
   (run-shell-command "pactl set-sink-volume 0 0%")
   (let ((max 100)
-	(tracker 0)
-	(vol-str-const "[*----------]"))
-    (lambda (change &optional (nmax 100 nmax-supplied-p))
-      (when nmax-supplied-p
-	(setf max nmax))
+	(tracker 0))
+    (lambda (change)
       (cond ((> (+ tracker change) max)
+	     (setf *volume-percentage* "Volume: ^1^B100%^^b^6 ")
 	     (message "Max Volume.  ~D%" tracker))
 	    ((< (+ tracker change) 0)
-	     (run-shell-command "pactl set-sink-volume 0 0%")
+	     (run-shell-command "pactl set-sink-volume 0 0% ")
+	     (setf *volume-percentage* "Volume: ^2^B0%^^b^6 ")
 	     (message "Min Volume. ~D%" tracker))
-	    ((= max 100)
-;;; this is disgusting. you need to refactor this..
-	     (setf tracker (+ tracker change))
-	     (setf (subseq *volume-std* 5 (+ (/ tracker 10) 5)) "=============")
-	     (setf (subseq *volume-std* (+ (/ tracker 10) 5) 16) "§------------")
-	     (setf *volume-readout* (concatenate 'string *volume-std* *volume-endcap*))
-	     (message "Volume: ~D%" tracker)
-	     (run-shell-command (format nil "pactl set-sink-volume 0 +~D%" change)))
 	    (t
-	     (if (> (+ tracker change) 100)
-		 (progn
-		   (setf tracker (+ tracker change))
-		   (setf (subseq *volume-std* 5 16) "============")
-		   (setf (subseq *volume-overdrive* 2 (IF (> (+ (/ TRACKER 10) 2) 11)
-							  11
-							  (+ (/ TRACKER 10) 2)))
-			 "XXXXXXXXXXXX"))))))))
-		   
-	     ;; (cond ((> max 100)
-	     ;; 	    (setf (subseq *volume-overdrive* 1 (+ (/ (- tracker 100) 10) 1)) "XXXXXXXXXX")
-	     ;; 	    ;; (setf (subseq *volume-overdrive* (+ (/ (- tracker 100) 10) 10) 12) "~~~~~~~~~~")
-	     ;; 	    (setf *volume-readout* (concatenate 'string *volume-std*
-	     ;; 						*volume-overdrive* *volume-endcap*))
-	     ;; 	    (message "WARNING: OVERDRIVE || VOL: ~D%" tracker))
-	     ;; 	   ((= max 100)
-	     ;; 	    (setf (subseq *volume-std* 5 (+ (/ tracker 10) 5)) "=============")
-	     ;; 	    (setf (subseq *volume-std* (+ (/ tracker 10) 5) 16) "§------------")
-	     ;; 	    (setf *volume-readout* (concatenate 'string *volume-std* *volume-endcap*))
-	     ;; 	    (message "Volume: ~D%" tracker)
-	     ;; 	    (run-shell-command (format nil "pactl set-sink-volume 0 +~D%" change))))
+	     (setf tracker (+ tracker change))
+	     (cond ((< tracker 10)
+		    ;; format green and add spaces
+		    (setf *volume-percentage* (format nil "Volume: ^2^B  ~D%^^b^6 " tracker)))
+		   ((= tracker 100)
+		    (setf *volume-percentage* (format nil "Volume: ^1^B~D%^^b^6 " tracker)))
+		   ((<= tracker 50)
+		    ;;format green
+		    (setf *volume-percentage* (format nil "Volume: ^2^B ~D%^^b^6 " tracker)))
+		   ((and (> tracker 50) (<= tracker 75))
+		    ;;format yellow
+		    (setf *volume-percentage* (format nil "Volume: ^3^B ~D%^^b^6 " tracker)))
+		   (t
+		    ;;format red 
+		    (setf *volume-percentage* (format nil "Volume: ^1^B ~D%^^b^6 " tracker))))
+	     (run-shell-command (format nil "pactl set-sink-volume 0 +~D%" change)))))))
 
-(defparameter *volume-readout* "^7^B[$----------]")
-(defparameter *volume-std* "^7^B[$----------]") 
-(defparameter *volume-endcap* "^6^b")
-(defparameter *volume-overdrive* "[~~~~~~~~~~]")
+(defun volume-setter-nmax ()
+  "this function generates a closure for controlling volume via the shell 
+command \"pactl set-sink-volume 0\". this closure also interacts with the 
+dynamic variable *volume-percentage*, which is designed to be evaluated in 
+the mode line to show the volume "
+  (run-shell-command "pactl set-sink-volume 0 0%")
+  (let ((max 100) ;; what to consider the maximum
+	(limit 200) ;; the highest value max can be
+	(tracker 0))
+    (lambda (change &optional (nmax 100 nmax-provided-p))
+      (when (and nmax-provided-p (<= nmax limit))
+	(setf max nmax))
+      (cond ((> (+ tracker change) max)
+	     (setf *volume-percentage* "Volume: ^1^B100%^^b^6 ")
+	     (setf tracker max)
+	     (message "Max Volume.  ~D%" tracker)
+	     (sleep .2))
+	    ((< (+ tracker change) 0)
+	     (run-shell-command "pactl set-sink-volume 0 0% ")
+	     (setf *volume-percentage* "Volume: ^2^B0%^^b^6 ")
+	     (message "Min Volume. ~D%" tracker)
+	     (sleep .2))
+	    (t
+	     (setf tracker (+ tracker change))
+	     (cond ((< (* (/ tracker max) 100) 10)
+		    ;; format green and add spaces
+		    (setf *volume-percentage* (format nil "Volume: ^2^B  ~D%^^b^6 " (round (* (/ tracker max) 100)))))
+		   ((= (* (/ tracker max) 100) 100)
+		    (setf *volume-percentage* (format nil "Volume: ^1^B~D%^^b^6 " (round (* (/ tracker max) 100)))))
+		   ((<= (* (/ tracker max) 100) 50)
+		    ;;format green
+		    (setf *volume-percentage* (format nil "Volume: ^2^B ~D%^^b^6 " (round (* (/ tracker max) 100)))))
+		   ((and (> (* (/ tracker max) 100) 50) (<= (* (/ tracker max) 100) 75))
+		    ;;format yellow
+		    (setf *volume-percentage* (format nil "Volume: ^3^B ~D%^^b^6 " (round (* (/ tracker max) 100)))))
+		   (t
+		    ;;format red 
+		    (setf *volume-percentage* (format nil "Volume: ^1^B ~D%^^b^6 " (round (* (/ tracker max) 100))))))
+	     (run-shell-command (format nil "pactl set-sink-volume 0 +~D%" change)))))))
 
-;; (setf (subseq *string-test* 1 5) "==========")
+(defparameter *volume* (volume-setter-nmax))
 
-;; volume readout: 
-;; [==========*]
-;; 
-;; [==========*]^7^B[===*-------]^6^b
-;;
-;; [===*-------]
-;; [=====*-----]
-;; [+++<¤¤¤¤¤¤¤]
-;; []
-;; [######-----]
-;; [$$$$$$$*###]
-;; [####*~~~~~~]
-;; [§§§§§>¤¤¤¤¤]
-
-(defparameter *volume* (volume-setter))
+(defcommand volume-overdrive (nmax) ((:number "New maximum volume (default is 100):  "))
+  (funcall *volume* 0 nmax))
+(defcommand reset-overdrive () ()
+  (funcall *volume* 0 100))
 
 (defcommand volume (inc) ((:number "enter the increment:  "))
   (funcall *volume* inc))
-(defcommand vol-overdrive (new) ((:number "new max vol"))
-  (funcall *volume* 0 new))
 (defcommand vol-reset () ()
   ;(defparameter *volume-readout* "^7^B[$----------]")
   ;(defparameter *volume-std* "^7^B[$----------]") 
