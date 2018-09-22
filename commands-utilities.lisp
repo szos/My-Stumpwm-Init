@@ -82,13 +82,13 @@ for the mode line. "
       (cond ((= inter 1) ;;increase brightness
 	     (progn
 	       (unless (>= level 100) 
-		 (run-shell-command "xbacklight -inc 10")
-		 (setf level (+ level 10))
+		 (run-shell-command "xbacklight -inc 5")
+		 (setf level (+ level 5))
 		 (setf *brightness-mode-line* (format nil "")))))
 	    ((= inter -1) ;;decrease brightness
 	     (unless (<= level 0)
-	       (run-shell-command "xbacklight -dec 10")
-	       (setf level (- level 10))))
+	       (run-shell-command "xbacklight -dec 5")
+	       (setf level (- level 5))))
 	    ((= inter 0) ;; go to 1% brightness
 	     (setf level 1)
 	     (run-shell-command "xbacklight -dec 100")

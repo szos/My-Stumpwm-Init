@@ -158,7 +158,7 @@ this lets you create hydras for related behavior. "
 ;; cycle groups
 (define-key *root-map* (kbd "C-M-f") "gnext")
 (define-key *root-map* (kbd "C-M-b") "gprev")
-(define-key *root-map* (kbd "space") "gnext")
+(define-key *root-map* (kbd "space") "command-mode")
 (define-key *root-map* (kbd "B") "brightness-map")
 
 ;; define our modal control keybind - this is special.

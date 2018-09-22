@@ -258,10 +258,74 @@
 ;; load swank to connect via emacs
 (require :swank)
 (swank-loader:init)
-(swank:stop-server 4006)
-(swank:create-server :port 4006
-		     :style swank:*communication-style*
-		     :dont-close t)
+(handler-case (swank:create-server :port 4006
+			      :style swank:*communication-style*
+			      :dont-close t)
+  (sb-bsd-sockets:address-in-use-error () (message "Swank Already Running")))
 
+;;; heres some extra key translations:
+
+(defun send-fake-extra-key (win key)
+  "Send a fake key press event to win."
+  (let ((xwin (window-xwin win)))
+    (multiple-value-bind (code state) (grab-code-test key)
+      (dolist (event '(:key-press :key-release))
+        (xlib:send-event xwin
+                         event
+                         (xlib:make-event-mask event)
+                         :display *display*
+                         :root (screen-root (window-screen win))
+                         ;; Apparently we need these in here, though they
+                         ;; make no sense for a key event.
+                         :x 0 :y 0 :root-x 0 :root-y 0
+                         :window xwin
+                         :event-window xwin
+                         :code code
+                         :state state)))))
+
+(defun grab-code (key)
+  (cond ((eq key *OE-key*)
+	 (values 216 0))
+	((eq key *oe-key*)
+	 (values 248 0))
+	((eq key *ae-key*)
+	 (values 230 0))
+	((eq key *AE-key*)
+	 (values 198 0))
+	((eq key *aa-key*)
+	 (values 229 0))
+	((eq key *AA-key*)
+	 (values 197 0))
+	(t
+	 (key-to-keycode+state key))))
+
+(defun send-intl-meta (screen key)
+  (when (screen-current-window screen)
+    (send-fake-extra-key (screen-current-window screen) key)))
+
+(defcommand meta-intl (key) ((:key "Key: "))
+  (send-intl-meta (current-screen) key))
+
+(define-keysym-name "ø" "oslash")
+(define-keysym-name "Ø" "Oslash")
+
+
+;; (meta-intl "Ø")
+
+(defun grab-code-test (key-str)
+  (cond ((string= key-str "Ø")
+	 (values 47 0))
+	(t (key-to-keycode+state key-str))))
+
+;; (meta (kbd "ø"))
+
+
+;; (defparameter *OE-key* (kbd "Ø"))
+;; (defparameter *oe-key* (kbd "ø"))
+;; (defparameter *AE-key* (kbd "Æ"))
+;; (defparameter *ae-key* (kbd "æ"))
+;; (defparameter *aa-key* (kbd "å"))
+;; (defparameter *AA-key* (kbd "Å"))
+;; (defparameter *test-k2* (kbd "E"))
 
 

@@ -11,9 +11,26 @@
 ;  "function, arguments, class restrictor."
   '(nil nil nil))
 
-
 ;; could be stored as ((function args)(function args)(function args))
 ;; and then we call every function with cwin in our window-hanger
+
+(defmacro define-open-window-command (name (&rest arg-names)
+					      (&rest args)
+						 class-to-search
+						 pull?
+						 cmd restrictor &body lambda-function-body)
+  "This generates a command to either raise/pull a window or open it via the 
+with-open-window function. This takes args the same way as defcommand. You can 
+use cwin in the lambda-function-body to reference the window selected. This is 
+an intentional variable capture. This depends on the fuzzy-finder function."
+  `(defcommand ,name ,arg-names ,args
+     (if-let ((win (fuzzy-finder '((:class ,class-to-search)))))
+       ,(if (equal :pull pull?)
+	    '(pull win)
+	    '(raise win))
+       (with-open-window ,cmd ,restrictor
+			#'(lambda (cwin)
+			    ,@lambda-function-body)))))
 
 (defun with-win (cmd restrictor function &rest args)
   (push (list function args restrictor) *with-window-hook*)
@@ -87,4 +104,24 @@ title to the title of the document opened - generally Untitled 1. "
       (toggle-always-show))
     (when always-on-top
       (toggle-always-on-top))))
-    
+
+(defcommand drop-down-term () ()
+  (if-let ((win (fuzzy-finder '((:class "DDTerm")))))
+    (raise win)
+    (with-open-window "cool-retro-term" "cool-retro-term"
+		      #'(lambda (cwin)
+			  (float-in-tiles cwin :new-class "DDTerm" :width 1000
+					  :height 350 :x 460 :y 18)))))
+
+(define-open-window-command  ddt () ()
+    "DDTerm" :pull "cool-retro-term" "cool-retro-term"
+  (float-in-tiles cwin :new-class "DDTerm" :width 1000
+		  :height 350 :x 460 :y 18))
+
+
+
+;; (defcommand scroll-4 () ()
+;;   (run-shell-command "xte \"mouseclick 4\""))
+
+;; (translation-keys:define-key-trans "|Float|DDTerm"
+;;     `(("C-M-p" "")))
