@@ -5,19 +5,24 @@ keycode  62 = Caps_Lock NoSymbol Caps_Lock
 
 keycode  37 = Hyper_L NoSymbol Hyper_L
 
+keycode  10 = 1 exclam 1 exclam exclamdown onesuperior exclamdown
+
 clear Shift
 clear Lock
 clear Mod1
 clear Mod2
 clear Mod3
 clear Mod4
+clear Mod5
 clear Control
 
 add shift   =  Shift_L
-add control =  Control_L Control_R
+add control =  Control_L 
 add lock    =  Caps_Lock
 
 add mod1    =  Alt_L Alt_R Meta_L
 add mod2    =  Num_Lock
 add mod3    =  Hyper_L
 add mod4    =  Super_L Super_R
+add mod5    =  ISO_Level3_Shift
+

@@ -28,7 +28,12 @@
 		   (let ((a (pop layout-list)))
 		     (append layout-list (list a))))
 	     (run-shell-command (format nil "setxkbmap ~S" (car layout-list)))
+	     (run-shell-command "xmodmap ~/.stumpwm.d/kcode.modmap")
+	     ;; (when (string= (car layout-list) "no")
+	     ;;   (set-prefix-key (kbd "C-")))
 	     (message "Current layout: ~S" (car layout-list)))))))
+
+;; (meta (kbd "ISO_Level3_Latch-z"))
 
 (defparameter *layout* (keyboard-layout-setter))
 (defcommand cycle-layout () ()
