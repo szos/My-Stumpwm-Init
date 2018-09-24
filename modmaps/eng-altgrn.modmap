@@ -87,9 +87,10 @@ keycode  90 = KP_Insert KP_0 KP_Insert KP_0
 keycode  91 = KP_Delete KP_Separator KP_Delete KP_Separator
 keycode  92 = ISO_Level3_Shift NoSymbol ISO_Level3_Shift
 
-keycode 105 = ISO_Level3_Shift NoSymbol ISO_Level3_Shift
-						      
+keycode 105 = Control_R NoSymbol Control_R
 
+keycode  64 = ISO_Level3_Latch NoSymbol ISO_Level3_Latch
+				
 keycode 108 = Alt_R Meta_R Alt_R Meta_R
 
 
@@ -111,12 +112,12 @@ clear Mod5
 clear Control
 
 add shift   =  Shift_L
-add control =  Control_L 
+add control =  Control_L Control_R
 add lock    =  Caps_Lock
 
 add mod1    =  Alt_L Alt_R Meta_L
 add mod2    =  Num_Lock
 add mod3    =  Hyper_L
 add mod4    =  Super_L Super_R
-add mod5    =  ISO_Level3_Shift
+add mod5    =  ISO_Level3_Shift ISO_Level3_Latch
 

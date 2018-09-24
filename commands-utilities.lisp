@@ -130,6 +130,9 @@ for the mode line. "
 ;; displays how far over 100% we are instead of our normal volume bar.
 (defparameter *volume-percentage* "Volume:   0% ")
 
+;;;; IF YOUR HAVEING TROUBLE WITH VOLUME CONTROLS NOT WORKING,
+;;;; RUN ALSAMIXER, THEN THEY SHOULD WORK.
+
 (defun volume-setter ()
   "this function generates a closure for controlling volume via the shell 
 command \"pactl set-sink-volume 0\". this closure also interacts with the 

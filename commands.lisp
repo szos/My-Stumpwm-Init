@@ -275,6 +275,12 @@ based on users global settings"
   (run-shell-command "~/icecat/icecat" ))
 
 (defcommand w3m () ()
+  (run-raise-or-pull
+   '(with-open-window "xterm -e w3m duckduckgo.com" "Xterm"
+     #'reclassify-window "W3M")
+   '(:class "W3M")))
+
+(defcommand w3m-new () ()
   "runs w3m open to duckduckgo"
   (run-shell-command "cool-retro-term -e w3m duckduckgo.com"))
 
@@ -335,13 +341,20 @@ based on users global settings"
 (defcommand deluge () ()
   (run-raise-or-pull "deluge" '(:class "Torrent Client")))
 
-(defcommand xterm () ()
-  (run-raise-or-pull "xterm" '(:class "XTerm")))
+(defun xterm (&optional (args nil)) 
+  (run-raise-or-pull (if args
+			 (format nil "xterm ~a" args)
+			 "xterm") '(:class "XTerm")))
 
-(defcommand term () ()
+(defun xterm-new (&optional (args nil))
+  (run-shell-command (if args
+			 (format nil "xterm ~a" args)
+			 "xterm")))
+
+(defcommand terminal () ()
   (run-raise-or-pull "cool-retro-term" '(:class "cool-retro-term")))
 
-(defcommand term-new () ()
+(defcommand terminal-new () ()
   (run-shell-command "cool-retro-term"))
 
 (defcommand termacs () ()
@@ -351,12 +364,21 @@ based on users global settings"
 			;; (meta "M-x")
 			)))
 
-(defcommand terminal () ()
-  (xfce4-terminal))
+(defcommand term () ()
+  (xterm))
+
+(defcommand term-new () ()
+  (xterm-new))
 
 (defcommand shcl () ()
   "launch a shell written in common lisp"
   (run-shell-command "xfce4-terminal -e /home/shos/LISP/shcl/shcl"))
+
+(defcommand newsboat () ()
+  (run-raise-or-pull
+   '(with-open-window "xterm -e newsboat" "Xterm"
+     #'reclassify-window "Newsboat")
+   '(:class "Newsboat")))
 
 (defcommand kdenlive () ()
   (run-raise-or-list "kdenlive" '(:class "Video Editor")))

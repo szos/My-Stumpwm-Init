@@ -9,7 +9,7 @@
 
 (defmacro λ (args &body body)
   "This is just a small wrapper around lambda to make it easier to write.
-This function works with λ or Λ"
+This function works with λ or Λ. However, some fonts dont support λ and Λ."
   `(lambda ,args ,@body))
 
 (defmacro rλ (args &body body)
@@ -43,7 +43,7 @@ call it from within the body with '(recurse args)'"
 ;; initialize system
 ;;; this is for an alt green enabled english modmap for more modifiers and keys!
 (run-shell-command "setxkbmap no")
-(run-shell-command "xmodmap ~/.stumpwm.d/modmaps/eng-altgrn.modmap")
+(run-shell-command "xmodmap ~/.stumpwm.d/modmaps/eng-altgrn.modmap") 
 
 (run-shell-command "xscreensaver")
 (run-shell-command "/usr/lib/notification-daemon-1.0/notification-daemon")
