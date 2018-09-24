@@ -7,6 +7,19 @@
 (ql:quickload :clx)
 (ql:quickload :utilities)
 
+(defmacro λ (args &body body)
+  "This is just a small wrapper around lambda to make it easier to write.
+This function works with λ or Λ"
+  `(lambda ,args ,@body))
+
+(defmacro rλ (args &body body)
+  "this is a recursive anonymous function. we can 
+call it from within the body with '(recurse args)'"
+  `(lambda ,args
+     (labels ((recurse ,args
+		,@body))
+       (recurse ,@args))))
+
 ;(load "/home/shos/.stumpwm.d/misc-macros.lisp")
 ;; ;; timeout wait.
 (setf *timeout-wait* 15)
@@ -331,4 +344,26 @@
 ;; (defparameter *AA-key* (kbd "Å"))
 ;; (defparameter *test-k2* (kbd "E"))
 
+(defparameter *keysym->keycodes-hash* (make-hash-table))
 
+(defun my-keysym->keycodes (keysym)
+  (let ((code (xlib:keysym->keycodes *display* keysym)))
+    (if (numberp code)
+	code
+	(gethash *keysym->keycodes-hash* keysym))))
+
+(defun add-key-to-hash (keycode keysym)
+  "this is for manually setting up keycode/syms. "
+  (setf (gethash *keysym->keycodes-hash* keysym) keycode))
+
+(defun key-to-keycode+state-backup (key)
+  (let ((code (xlib:keysym->keycodes *display* (key-keysym key))))
+    (cond ((eq (xlib:keycode->keysym *display* code 0) (key-keysym key))
+           (values code (x11-mods key)))
+          ((eq (xlib:keycode->keysym *display* code 1) (key-keysym key))
+           (values code (apply 'xlib:make-state-mask
+                               (cons :shift (xlib:make-state-keys (x11-mods key))))))
+          (t
+           ;; just warn them and go ahead as scheduled
+           (warn "Don't know how to encode ~s" key)
+           (values code (x11-mods key))))))

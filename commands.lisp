@@ -4,6 +4,32 @@
 
 (in-package :stumpwm)
 
+(defmacro cond-let (vars &body cond-body)
+  `(let ,vars
+     (cond ,@cond-body)))
+
+(defun run-raise-or-pull (cmd props)
+  "This function grabs a window based on props (and automatically list if there
+are multiple matching windows) and does one of three things: if the window 
+doesnt exist, it evaluates cmd. if the window is currently visible OR
+is in a different group, it raises the window. otherwise the window is pulled
+to the current frame. It is designed to take advantage of fuzzy-finder's 
+multiple possible parameter searches, with an example call looking like:
+\(run-raise-or-pull \"command\" '\(:class \"cc\" \)\)  OR
+\(run-raise-or-pull \"command\" '\(\(:title \"title\"\)
+                                   \(:class \"CC\"\)\) "
+  (cond-let ((win (fuzzy-finder (if (listp (car props))
+				    props
+				    `(,props)))))
+    ((not win)
+     (if (stringp cmd)
+	 (run-shell-command cmd)
+	 (eval cmd)))
+    ((and (window-visible-p win) (not (eq (window-group win) (current-group))))
+     (raise win))
+    (t
+     (pull win))))
+
 ;; define some stuff to send keys to firefox. then add it to a change-window-hook 
 ;; basically try to emulate EXWM's exwm-input-set-simulation-keys
 
@@ -86,6 +112,7 @@ multiple matches, generate a window list"
   `(if-let ((win (fuzzy-finder '((:class ,class)))))
      (raise win)
      (run-shell-command ,cmd)))
+
 
 (defun run-pull (cmd class)
   (if-let ((win (fuzzy-finder `((:class ,class)))))
@@ -189,14 +216,14 @@ based on users global settings"
 ;;; browsers
 (defcommand firefox () ()
   "run firefox or set focus to it f already running"
-  (run-or-raise-or-list "firefox" '((:class "Firefox"))))
+  (run-raise-or-pull "firefox" '(:class "Firefox")))
 (defcommand firefox-n () ()
   "run firefox"
   (run-shell-command "firefox"))
     
 (defcommand waterfox () ()
   "Run or raise or list waterfox"
-  (run-or-raise-or-list "waterfox" '((:class "Waterfox"))))
+  (run-raise-or-pull "waterfox" '((:class "Waterfox"))))
 
 (defcommand waterfox-n () ()
   "run waterfox"
@@ -211,16 +238,19 @@ based on users global settings"
 
 (defcommand youtube () ()
   "raise the firefox window open to youtube, or open a new window/tab open to youtube"
-  (run-or-raise-or-list "waterfox https://youtube.com" '((:title "YouTube"))))
+  (run-raise-or-pull "waterfox https://youtube.com" '((:title "YouTube"))))
 
 (defcommand conkeror () ()
   "run conkeror or raise it"
-  (run-raise-or-list "conkeror" '(:class "Conkeror")))
+  (run-raise-or-pull "conkeror" '(:class "Conkeror")))
 (defcommand conkeror-n () ()
   "run a new conkeror instance"
   (run-shell-command "conkeror"))
 
 (defcommand tor () ()
+  (run-raise-or-pull "./TOR/Browser/start-tor-browser" '(:class "Tor Browser")))
+
+(defcommand tor2 () ()
   "runs or raises tor."
   (if-let ((win (fuzzy-finder '((:class "Tor Browser")))))
     (raise win)
@@ -267,13 +297,13 @@ based on users global settings"
 (defprogram-shortcut thunderbird)
 
 (defcommand mail () ()
-  (run-or-raise-or-list "thunderbird" '((:class "Thunderbird"))))
+  (run-raise-or-pull "thunderbird" '((:class "Thunderbird"))))
 
 (defcommand qtox () ()
-  (run-or-raise-or-list "qtox" '((:class "qTox"))))
+  (run-raise-or-pull "qtox" '((:class "qTox"))))
 
 (defcommand Riot () ()
-  (run-raise "riot-desktop" "Riot"))
+  (run-raise-or-pull "riot-desktop" '(:class "Riot")))
 
 (defcommand wpull (search) ((:string "Class to Pull: "))
   (if-let ((win (fuzzy-finder `((:class ,search)))))
@@ -285,7 +315,7 @@ based on users global settings"
   (run-or-raise-or-list "vlc" '((:class "vlc"))))
 
 (defcommand parole-media () ()
-  (run-raise "parole" "Parole"))
+  (run-raise-or-pull "parole" '(:class "Parole")))
 
 (defcommand parole-media-new-instance () ()
   (run-shell-command "parole -i"))
@@ -294,22 +324,22 @@ based on users global settings"
   "run mpv with the pseudo-gui frontend"
   (run-or-raise-or-list "mpv --player-operation-mode=pseudo-gui" '((:class "mpv"))))
 
-(defcommand mpv-baka () ()
-  "run mpv with the baka frontend"
-  (run-or-raise-or-list "baka-mplayer" '((:class "baka-mplayer"))))
 ;;; end media
 
 (defprogram-shortcut thunar)
 
 (defcommand file-manager () ()
   "runs your file manager in the current buffer"
-  (run-raise-or-list "thunar" '(:class "File Manager")))
+  (run-raise-or-pull "thunar" '(:class "File Manager")))
 
 (defcommand deluge () ()
-  (run-raise-or-list "deluge" '(:class "Torrent Client")))
+  (run-raise-or-pull "deluge" '(:class "Torrent Client")))
+
+(defcommand xterm () ()
+  (run-raise-or-pull "xterm" '(:class "XTerm")))
 
 (defcommand term () ()
-  (run-raise "cool-retro-term" "cool-retro-term"))
+  (run-raise-or-pull "cool-retro-term" '(:class "cool-retro-term")))
 
 (defcommand term-new () ()
   (run-shell-command "cool-retro-term"))
@@ -342,18 +372,18 @@ based on users global settings"
 (defcommand log-out () () 
   (run-or-raise-or-list "xfce4-session-logout" '((:class "Xfce4-session-logout"))))
 (defcommand appfinder () () 
-  (run-or-raise-or-list "xfce4-appfinder" '((:class "Xfce4-appfinder"))))
+  (run-raise-or-pull "xfce4-appfinder" '((:class "Xfce4-appfinder"))))
 
 (defcommand screenshot () ()
   (with-open-window "xfce4-screenshooter" nil #'float-window (current-group)))
 
 (defcommand task-manager () () 
-  (run-raise-or-list "xfce4-taskmanager" '(:class "Task Manager")))
+  (run-raise-or-pull "xfce4-taskmanager" '(:class "Task Manager")))
 (defcommand xfce4-terminal () ()
   "run xfce terminal"
-  (run-raise-or-list "xfce4-terminal" '(:class "Terminal")))
+  (run-raise-or-pull "xfce4-terminal" '(:class "Terminal")))
 (defcommand pamac () () 
-    (run-raise-or-list "pamac-manager" '(:class "Software Manager")))
+  (run-raise-or-list "pamac-manager" '(:class "Software Manager")))
 (defcommand power-manager () ()
   (run-raise-or-list "xfce4-power-manager-settings" '(:class "Power Manager")))
 ;;; XFCE end
@@ -362,12 +392,12 @@ based on users global settings"
   (run-raise-or-list "galculator" '(:class "Utility")))
 (defcommand keepass () () 
   (run-raise-or-list "keepass" '(:class "Utility")))
-(defcommand lem () ()
-  (if-let ((win (fuzzy-finder '((:class "Lem")))))
-    (raise win)
-    (with-open-window "xfce4-terminal -e ./.roswell/bin/lem" nil
-  		      #'(lambda (cwin)
-  			  (setf (window-class cwin) "Lem")))))
+
+(defcommand lem2 () ()
+  (run-raise-or-pull '(with-open-window "xfce4-terminal -e ./.roswell/bin/lem" nil
+  		       #'(lambda (cwin)
+  			   (setf (window-class cwin) "Lem")))
+		     '(:class "Lem")))
 
 (defcommand mousepad () ()
   ;;; (with-open-window "mousepad" nil #'float-in-tiles)
@@ -494,9 +524,11 @@ either sends the {kbd} result or "
 							 :x old-x :y old-y
 							 :width w :height h)))))
 
-(defcommand portacle-instance () ()
-  (with-open-window "sh /home/shos/LISP/portacle/portacle.run" "Emacs"
-		    #'reclassify-window "Portacle"))
+(defcommand portacle () ()
+  (run-raise-or-pull
+   '(with-open-window "sh /home/shos/LISP/portacle/portacle.run" "Emacs"
+     #'reclassify-window "Portacle")
+   '(:class "Portacle")))
 
 ;;;begin pacman and other system bits
 (defcommand update-system (pwd) ((:password "PWD: "))
@@ -509,9 +541,9 @@ either sends the {kbd} result or "
 
 ;; Games
 (defcommand feed-the-beast () () 
-    (run-raise-or-list "feedthebeast" '(:class "Game")))
+  (run-raise-or-list "feedthebeast" '(:class "Game")))
 (defcommand minecraft () () 
-    (run-raise-or-list "minecraft" '(:class "Game")))
+  (run-raise-or-list "minecraft" '(:class "Game")))
 ;; Games end
 
 ;; Graphics
