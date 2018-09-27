@@ -77,7 +77,7 @@ this lets you create hydras for related behavior. "
 		   ((kbd "t") "toggle-always-on-top")
 		   ((kbd "g") "toggle-always-show")))))
 
-(define-key *top-map* (kbd "C-q")
+(define-key *top-map* (kbd "C-M-s-q")
   *top-redef*)
 
 (defcommand sys-maniper () ()
@@ -116,6 +116,7 @@ this lets you create hydras for related behavior. "
 (define-key *root-map* (kbd "M-f") "move-focus right")
 (define-key *root-map* (kbd "M-n") "move-focus down")
 (define-key *root-map* (kbd "M-p") "move-focus up")
+(define-key *root-map* (kbd "m") "modeline-stumptray-toggle")
 
 ;; Browse somewhere
 ;; (define-key *root-map* (kbd "b") "colon1 exec firefox http://www.")
@@ -160,6 +161,7 @@ this lets you create hydras for related behavior. "
 (define-key *root-map* (kbd "C-M-b") "gprev")
 (define-key *root-map* (kbd "space") "command-mode")
 (define-key *root-map* (kbd "B") "brightness-map")
+(define-key *root-map* (kbd "y") "kill-yt")
 
 ;; define our modal control keybind - this is special.
 ;; (define-key *top-map* (kbd "C-o") "modal-controller")
@@ -180,7 +182,7 @@ this lets you create hydras for related behavior. "
 ;; (define-key *top-map* (kbd "s-:") "window-send-string Ø")
 ;; (define-key *top-map* (kbd "s-;") "window-send-string \"ø\"")
 
-;; øØ æÆ åÅ 
+;; øØ æÆ åÅ provided by xmodmap
 (define-key *root-map* (kbd "C-d") "describe-key");;
 
 

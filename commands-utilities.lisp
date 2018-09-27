@@ -18,26 +18,26 @@
 ;; sections: 
 ;; Keyboard layout
 ;; layout tracking variable
-(defun keyboard-layout-setter ()
-  (let ((layout-list '("us" "no")))
-    (lambda (&optional (layout "us" layout-supplied-p))
-      (cond (layout-supplied-p
-	     (run-shell-command (format nil "setxkbmap ~S" layout)))
-	    (t
-	     (setf layout-list 
-		   (let ((a (pop layout-list)))
-		     (append layout-list (list a))))
-	     (run-shell-command (format nil "setxkbmap ~S" (car layout-list)))
-	     (run-shell-command "xmodmap ~/.stumpwm.d/kcode.modmap")
-	     ;; (when (string= (car layout-list) "no")
-	     ;;   (set-prefix-key (kbd "C-")))
-	     (message "Current layout: ~S" (car layout-list)))))))
+;; (defun keyboard-layout-setter ()
+;;   (let ((layout-list '("us" "no")))
+;;     (lambda (&optional (layout "us" layout-supplied-p))
+;;       (cond (layout-supplied-p
+;; 	     (run-shell-command (format nil "setxkbmap ~S" layout)))
+;; 	    (t
+;; 	     (setf layout-list 
+;; 		   (let ((a (pop layout-list)))
+;; 		     (append layout-list (list a))))
+;; 	     (run-shell-command (format nil "setxkbmap ~S" (car layout-list)))
+;; 	     (run-shell-command "xmodmap ~/.stumpwm.d/kcode.modmap")
+;; 	     ;; (when (string= (car layout-list) "no")
+;; 	     ;;   (set-prefix-key (kbd "C-")))
+;; 	     (message "Current layout: ~S" (car layout-list)))))))
 
 ;; (meta (kbd "ISO_Level3_Latch-z"))
 
-(defparameter *layout* (keyboard-layout-setter))
-(defcommand cycle-layout () ()
-  (funcall *layout*))
+;;; (defparameter *layout* (keyboard-layout-setter))
+;; (defcommand cycle-layout () ()
+;;   (funcall *layout*))
 ;; set up bightness control
 ;; set up a closure based implementation:
 (defun bright-readout-set (amnt)
@@ -83,7 +83,7 @@ for the mode line. "
 (defun brightness ()
   (run-shell-command "xbacklight -inc 100")
   (let ((level 100))
-    (lambda (inter)
+    (λ (inter)
       (cond ((= inter 1) ;;increase brightness
 	     (progn
 	       (unless (>= level 100) 
@@ -205,7 +205,8 @@ the mode line to show the volume "
 		   (t
 		    ;;format red 
 		    (setf *volume-percentage* (format nil "Volume: ^1^B ~D%^^b^6 " (round (* (/ tracker max) 100))))))
-	     (run-shell-command (format nil "pactl set-sink-volume 0 +~D%" change)))))))
+	     (run-shell-command (format nil "pactl set-sink-volume 0 +~D%" change))
+	     )))))
 
 (defparameter *volume* (volume-setter-nmax))
 
@@ -220,7 +221,7 @@ the mode line to show the volume "
   ;(defparameter *volume-readout* "^7^B[$----------]")
   ;(defparameter *volume-std* "^7^B[$----------]") 
   ;(defparameter *volume-endcap* "^6^b")
-  (defparameter *volume* (volume-setter))
+  (defparameter *volume* (volume-setter-nmax))
   (volume 0))
 
 
@@ -278,7 +279,7 @@ the mode line to show the volume "
   ((kbd "M-b") "brightness-change 1")
   ((kbd "C-M-b") "brightness-change 0")
   ((kbd "C-M-B") "brightness-reset")
-  ((kbd "C-l") "cycle-layout")
+  ;; ((kbd "C-l") "cycle-layout")
   ((kbd "C-m") "modeline-stumptray-toggle")
   ((kbd "M-t") "cycle-temperature")
   ((kbd "C-h") "sys-manip-help"))
@@ -292,7 +293,7 @@ C-b----------------Brightness Decrement
 M-b----------------Brightness Increment
 C-M-b-------------Engage Low-light Mode
 C-M-B-----------Reset Brightness to 10%
-C-l--------------Cycle Keyboard Layouts
+C-l--not used----Cycle Keyboard Layouts
 C-m-------Toggle Modeline and Stumptray
 M-t------------Cycle Screen Temperature
 C-h----------------------This Help Menu"))

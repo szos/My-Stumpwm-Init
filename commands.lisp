@@ -25,7 +25,7 @@ multiple possible parameter searches, with an example call looking like:
      (if (stringp cmd)
 	 (run-shell-command cmd)
 	 (eval cmd)))
-    ((and (window-visible-p win) (not (eq (window-group win) (current-group))))
+    ((or (window-visible-p win) (not (eq (window-group win) (current-group))))
      (raise win))
     (t
      (pull win))))
@@ -196,6 +196,17 @@ multiple matches, generate a window list"
   (let ((frames (group-frames (current-group))))
     (message "~S~%~%~S" (cadr frames) (length frames))))
 
+(defun set-sloppy ()
+  (setf *mouse-focus-policy* :sloppy))
+
+(defun set-ignore ()
+  (setf *mouse-focus-policy* :ignore))
+
+(defcommand toggle-mouse-mode () ()
+  (if (equal *mouse-focus-policy* :ignore)
+      (set-sloppy)
+      (set-ignore)))
+
 ;;; Set up commands to grab floating windows that I've generated with
 ;;; with-open-window and float-in-tiles. its required for them to be listed.
 (defcommand access-floats () ()
@@ -205,6 +216,7 @@ multiple matches, generate a window list"
 				  `(("raise" (raise ,win))
 				    ("focus" (focus-all ,win))
 				    ("delete" (delete-window ,win))))))))
+
 (defcommand access-floats-global () ()
   "looks for windows floated with the (with-open-window... #'float-in-tiles) 
 based on users global settings"
@@ -213,25 +225,8 @@ based on users global settings"
 				  `(("raise" (raise ,win))
 				    ("focus" (focus-all ,win))
 				    ("delete" (delete-window ,win))))))))
-;;; browsers
-(defcommand firefox () ()
-  "run firefox or set focus to it f already running"
-  (run-raise-or-pull "firefox" '(:class "Firefox")))
-(defcommand firefox-n () ()
-  "run firefox"
-  (run-shell-command "firefox"))
-    
-(defcommand waterfox () ()
-  "Run or raise or list waterfox"
-  (run-raise-or-pull "waterfox" '((:class "Waterfox"))))
-
-(defcommand waterfox-n () ()
-  "run waterfox"
-  (run-shell-command "waterfox"))
-
-(defcommand waterfox-p () ()
-  "run private window"
-  (run-shell-command "waterfox --private-window"))
+;;; Load Application Commands.
+(load "~/.stumpwm.d/commands-applications.lisp")
 
 (defcommand waterfox-f () ()
   (with-open-window "waterfox" nil #'float-window (current-group)))
@@ -240,21 +235,27 @@ based on users global settings"
   "raise the firefox window open to youtube, or open a new window/tab open to youtube"
   (run-raise-or-pull "waterfox https://youtube.com" '((:title "YouTube"))))
 
-(defcommand conkeror () ()
-  "run conkeror or raise it"
-  (run-raise-or-pull "conkeror" '(:class "Conkeror")))
-(defcommand conkeror-n () ()
-  "run a new conkeror instance"
-  (run-shell-command "conkeror"))
 
-(defcommand tor () ()
-  (run-raise-or-pull "./TOR/Browser/start-tor-browser" '(:class "Tor Browser")))
+(defparameter *kill-test* nil)
 
-(defcommand tor2 () ()
-  "runs or raises tor."
-  (if-let ((win (fuzzy-finder '((:class "Tor Browser")))))
-    (raise win)
-    (run-shell-command "./TOR/Browser/start-tor-browser")))
+(defcommand watch-youtube-video (url) ((:string "URL:  "))
+  (let ((x (frame-x (window-frame (current-window))))
+	(y (frame-y (window-frame (current-window))))
+	(w (frame-width (window-frame (current-window))))
+	(h (frame-height (window-frame (current-window)))))
+    (with-open-window  (format nil "mpv ~a" url) "mpv"
+		       #'(lambda (cwin)
+			   (float-in-tiles cwin :always-on-top t
+			   		   :new-class "Youtube" :x x :y (if (< y 40)
+			   							  37
+			   							  y)
+			   		   :width (- w 5) :height (if (< y 40)
+			   					(- h 37)
+			   					h))
+			   (setf *kill-test* cwin)))))
+
+(defcommand kill-yt () ()
+  (kill-window *kill-test*))
 
 (defcommand icecat () ()
   "icarun raise or list icecat"
@@ -274,15 +275,8 @@ based on users global settings"
   "create new instance of portable icecat"
   (run-shell-command "~/icecat/icecat" ))
 
-(defcommand w3m () ()
-  (run-raise-or-pull
-   '(with-open-window "xterm -e w3m duckduckgo.com" "Xterm"
-     #'reclassify-window "W3M")
-   '(:class "W3M")))
-
-(defcommand w3m-new () ()
-  "runs w3m open to duckduckgo"
-  (run-shell-command "cool-retro-term -e w3m duckduckgo.com"))
+(defcommand birdfont () ()
+  (run-shell-command "flatpak run org.birdfont.BirdFont/x86_64/master"))
 
 (defcommand elinks () ()
   "runs an instance of elinks from the terminal"
@@ -300,16 +294,7 @@ based on users global settings"
 ;;   "find YouTube in the title field."
 ;;   (find-then-do "YouTube" "title"))
 
-(defprogram-shortcut thunderbird)
 
-(defcommand mail () ()
-  (run-raise-or-pull "thunderbird" '((:class "Thunderbird"))))
-
-(defcommand qtox () ()
-  (run-raise-or-pull "qtox" '((:class "qTox"))))
-
-(defcommand Riot () ()
-  (run-raise-or-pull "riot-desktop" '(:class "Riot")))
 
 (defcommand wpull (search) ((:string "Class to Pull: "))
   (if-let ((win (fuzzy-finder `((:class ,search)))))
@@ -317,18 +302,7 @@ based on users global settings"
     (message "No Matching Windows Found")))
 
 ;;; Media
-(defcommand vlc () ()
-  (run-or-raise-or-list "vlc" '((:class "vlc"))))
 
-(defcommand parole-media () ()
-  (run-raise-or-pull "parole" '(:class "Parole")))
-
-(defcommand parole-media-new-instance () ()
-  (run-shell-command "parole -i"))
-
-(defcommand mpv-minimal () ()
-  "run mpv with the pseudo-gui frontend"
-  (run-or-raise-or-list "mpv --player-operation-mode=pseudo-gui" '((:class "mpv"))))
 
 ;;; end media
 
@@ -376,7 +350,7 @@ based on users global settings"
 
 (defcommand newsboat () ()
   (run-raise-or-pull
-   '(with-open-window "xterm -e newsboat" "Xterm"
+   '(with-open-window "xterm -e newsboat" "XTerm"
      #'reclassify-window "Newsboat")
    '(:class "Newsboat")))
 
@@ -415,8 +389,8 @@ based on users global settings"
 (defcommand keepass () () 
   (run-raise-or-list "keepass" '(:class "Utility")))
 
-(defcommand lem2 () ()
-  (run-raise-or-pull '(with-open-window "xfce4-terminal -e ./.roswell/bin/lem" nil
+(defcommand lem () ()
+  (run-raise-or-pull '(with-open-window "xterm -e ./.roswell/bin/lem" "XTerm"
   		       #'(lambda (cwin)
   			   (setf (window-class cwin) "Lem")))
 		     '(:class "Lem")))
@@ -602,5 +576,15 @@ and assign it to the argument provided."
 				     "RET" "cd" "RET"
 				     "./pia.sh" "RET")
 				    cwin))))
+
+(defun watch-video-ascii (pathname)
+  (run-shell-command
+   (format nil "xfce4-terminal -e CACA_DRIVER=ncurses mplayer -vo caca -quiet ~a" pathname)))
+
+(defcommand watch-ascii-vid (file) ((:file "File Path:  "))
+  (run-shell-command
+   (format nil "xfce4-terminal -e CACA_DRIVER=ncurses mplayer -vo caca -quiet ~a" pathname)))
+
+
 
 
