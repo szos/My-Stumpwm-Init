@@ -36,7 +36,9 @@ call it from within the body with '(recurse args)'"
 (set-prefix-key (kbd "C-;"))
 ;; (set-prefix-key (kbd "s"))
 ;; properly
-(define-key *root-map* (kbd ";") "colon") ;; needed for some reason. 
+(define-key *root-map* (kbd ";") "colon") ;; needed for some reason.
+
+;; (setf *mouse-focus-policy* :sloppy)
 
 ;; ;;swap caps and ctrl
 ;; (run-shell-command "setxkbmap -option ctrl:swapcaps")
@@ -44,7 +46,22 @@ call it from within the body with '(recurse args)'"
 ;; initialize system
 ;;; this is for an alt green enabled english modmap for more modifiers and keys!
 (run-shell-command "setxkbmap no")
-(run-shell-command "xmodmap ~/.stumpwm.d/modmaps/eng-altgrn.modmap")
+(run-shell-command "xmodmap ~/.stumpwm.d/modmaps/eng-no.modmap")
+(defparameter *xmodmaps*
+  (let ((x nil))
+    (lambda ()
+      (if (not x)
+	  (progn
+	    (setf x t)
+	    (run-shell-command "xmodmap ~/.stumpwm.d/modmaps/eng-altgrn.modmap")
+	    (message "xmodmap set to eng-altgrn.modmap"))
+	  (progn
+	    (setf x nil)
+	    (run-shell-command "xmodmap ~/.stumpwm.d/modmaps/eng-no.modmap")
+	    (message "xmodmap set to eng-no.modmap"))))))
+
+(defcommand change-layout () ()
+  (funcall *xmodmaps*))
 
 (run-shell-command "xscreensaver")
 ;; (run-shell-command "xfce4-power-manager")
@@ -52,6 +69,7 @@ call it from within the body with '(recurse args)'"
 (run-shell-command "/usr/bin/lxqt-policykit-agent")
 
 (set-module-dir "/home/shos/.stumpwm.d/")
+
 ;;(add-to-load-path "~/.stumpwm.d/custom-modules/ratcontrol/")
 ;;(add-to-load-path "~/.stumpwm.d/custom-modules/translation-keys/")
 ;;(add-to-load-path "~/.stumpwm.d/custom-modules/matrix-stump/")
@@ -85,8 +103,6 @@ call it from within the body with '(recurse args)'"
 (load-module "hostname")
 (load-module "battery-portable")
 (load-module "notifications")
-(load-module "windowtags")
-(load-module "globalwindows")
 ;;; load fonts, needed after latest update (1 june 2018)
 (load-module "ttf-fonts")
 ;;;; various font examples, you can check the available fonts by formatting 
@@ -114,7 +130,7 @@ call it from within the body with '(recurse args)'"
 	    " %d
 "
 	    ;; crashes stump!'(:eval (run-shell-command "amixer get Master"))
-	    ;; '(:eval (run-shell-command "date +%T" t))
+	    ;;  '(:eval (run-shell-command "date +%T" t))
       	    "%h | %g | %W"))
 
 ;; (defvar *battery-status-command*
@@ -162,7 +178,7 @@ call it from within the body with '(recurse args)'"
 ;; load files
 (load "~/.stumpwm.d/interactive-maps.lisp")
 (load "~/.stumpwm.d/with-open-window.lisp")
-(load "~/.stumpwm.d/commands-reclass.lisp")
+;; (load "~/.stumpwm.d/commands-reclass.lisp")
 (load "~/.stumpwm.d/windows-groups-frames.lisp")
 (load "~/.stumpwm.d/commands.lisp")
 ;; (load "~/.stumpwm.d/ratcontrol.lisp")
@@ -175,7 +191,6 @@ call it from within the body with '(recurse args)'"
 ;; (load "~/.stumpwm.d/scratch.lisp")
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
 
 ;; Web jump (works for Google and Imdb)
 ;; (defmacro make-web-jump (name prefix)
@@ -231,7 +246,7 @@ call it from within the body with '(recurse args)'"
 
 ;; ;;; beginning user defined bits and bobs
 ;; ;;make mouse click focus window
-;; ;; (setf *mouse-focus-policy* :click)
+;; ;; 
 ;; ;;; finish setting up:
 ;; ;; run xkeysnail
 ;; ;; (run-shell-command "sudo xkeysnail ~/xkeysnail-master/config.py")
@@ -301,32 +316,6 @@ call it from within the body with '(recurse args)'"
                          :code code
                          :state state)))))
 
-(defun grab-code (key)
-  (cond ((eq key *OE-key*)
-	 (values 216 0))
-	((eq key *oe-key*)
-	 (values 248 0))
-	((eq key *ae-key*)
-	 (values 230 0))
-	((eq key *AE-key*)
-	 (values 198 0))
-	((eq key *aa-key*)
-	 (values 229 0))
-	((eq key *AA-key*)
-	 (values 197 0))
-	(t
-	 (key-to-keycode+state key))))
-
-(defun send-intl-meta (screen key)
-  (when (screen-current-window screen)
-    (send-fake-extra-key (screen-current-window screen) key)))
-
-(defcommand meta-intl (key) ((:key "Key: "))
-  (send-intl-meta (current-screen) key))
-
-(define-keysym-name "ø" "oslash")
-(define-keysym-name "Ø" "Oslash")
-
 
 ;; (meta-intl "Ø")
 
@@ -345,18 +334,6 @@ call it from within the body with '(recurse args)'"
 ;; (defparameter *aa-key* (kbd "å"))
 ;; (defparameter *AA-key* (kbd "Å"))
 ;; (defparameter *test-k2* (kbd "E"))
-
-(defparameter *keysym->keycodes-hash* (make-hash-table))
-
-(defun my-keysym->keycodes (keysym)
-  (let ((code (xlib:keysym->keycodes *display* keysym)))
-    (if (numberp code)
-	code
-	(gethash *keysym->keycodes-hash* keysym))))
-
-(defun add-key-to-hash (keycode keysym)
-  "this is for manually setting up keycode/syms. "
-  (setf (gethash *keysym->keycodes-hash* keysym) keycode))
 
 (defun key-to-keycode+state-backup (key)
   (let ((code (xlib:keysym->keycodes *display* (key-keysym key))))

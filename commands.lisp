@@ -306,11 +306,6 @@ based on users global settings"
 
 ;;; end media
 
-(defprogram-shortcut thunar)
-
-(defcommand file-manager () ()
-  "runs your file manager in the current buffer"
-  (run-raise-or-pull "thunar" '(:class "File Manager")))
 
 (defcommand deluge () ()
   (run-raise-or-pull "deluge" '(:class "Torrent Client")))
@@ -585,6 +580,5 @@ and assign it to the argument provided."
   (run-shell-command
    (format nil "xfce4-terminal -e CACA_DRIVER=ncurses mplayer -vo caca -quiet ~a" pathname)))
 
-
-
-
+(defcommand calibre () ()
+  (run-raise-or-pull "calibre" '(:class "calibre")))

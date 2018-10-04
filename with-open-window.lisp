@@ -32,13 +32,6 @@ an intentional variable capture. This depends on the fuzzy-finder function."
 			#'(lambda (cwin)
 			    ,@lambda-function-body)))))
 
-(defun with-win (cmd restrictor function &rest args)
-  (push (list function args restrictor) *with-window-hook*)
-  (add-hook *focus-window-hook* 'window-hanger)
-  (if (stringp cmd)
-      (run-shell-command cmd)
-      (run-commands (format nil "~S" cmd))))
-
 (defun with-open-window (cmd restrict-class function &rest args)
   "stores the {function}, {args}, and {restrict-class} variables in a dynamic
 variable so that with-window-hanger can grab them. it then hangs 
