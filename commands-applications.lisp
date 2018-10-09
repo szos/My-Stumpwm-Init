@@ -1,3 +1,4 @@
+(in-package :stumpwm)
 ;;;;;;;;;;;;;;;;;;;;
 ;;; APPLICATIONS ;;;
 ;;;;;;;;;;;;;;;;;;;;
@@ -16,24 +17,24 @@
 ;;; FIREFOX
 (defcommand firefox () ()
   "run firefox or set focus to it f already running"
-  (run-raise-or-pull "firefox" '(:class "Firefox")))
+  (run-raise-or-pull "firejail firefox" '(:class "Firefox")))
 
 (defcommand firefox-n () ()
   "run firefox"
-  (run-shell-command "firefox"))
+  (run-shell-command "firejail firefox"))
 
 ;;; WATERFOX
 (defcommand waterfox () ()
   "Run or raise or list waterfox"
-  (run-raise-or-pull "waterfox" '((:class "Waterfox"))))
+  (run-raise-or-pull "firejail waterfox" '((:class "Waterfox"))))
 
 (defcommand waterfox-n () ()
   "run waterfox"
-  (run-shell-command "waterfox"))
+  (run-shell-command "firejail waterfox"))
 
 (defcommand waterfox-p () ()
   "run private window"
-  (run-shell-command "waterfox --private-window"))
+  (run-shell-command "firejail waterfox --private-window"))
 
 ;;; CONKEROR
 (defcommand conkeror () ()
@@ -42,7 +43,7 @@
 
 (defcommand conkeror-n () ()
   "run a new conkeror instance"
-  (run-shell-command "conkeror"))
+  (run-shell-command "firejail conkeror"))
 
 ;;; W3M
 (defcommand w3m () ()
@@ -66,10 +67,11 @@
 ;;;;;;;;;;;;;;;;;;;;;;;
 
 ;;; THUNDERBIRD
-(defprogram-shortcut thunderbird)
+(defcommand thunderbird () ()
+  (run-raise-or-pull "firejail thunderbird" '((:class "Thunderbird"))))
 
 (defcommand mail () ()
-  (run-raise-or-pull "thunderbird" '((:class "Thunderbird"))))
+  (run-raise-or-pull "firejail thunderbird" '((:class "Thunderbird"))))
 ;;; QTOX
 (defcommand qtox () ()
   (run-raise-or-pull "qtox" '((:class "qTox"))))

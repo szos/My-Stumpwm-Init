@@ -61,25 +61,7 @@ for the mode line. "
       (+ x x x)
       x))
 
-(defun brightness-setter ()
-  (run-shell-command "xbacklight -inc 100")
-  (let ((level 100))
-    (lambda (change)
-      (cond ((< change 0)
-	     ;; decrement and check if 0
-	     ())
-	    ((> change 0)
-	     ;; increment and check if 100
-	     )
-	    ((>= (+ level change) 100)
-	     (setf *brightness-mode-line* (format nil "^B100^b"))
-	     (run-shell-command "xbacklight -inc 100"))
-	    ((< (+ level change) 10)
-	     (run-shell-command (format nil "xbacklight -dec ~D" (abs change)))
-	     (setf *brightness-mode-line* (format nil "^B  0^b")))
-	    (t
-	     ())
-	    ))))
+
 (defun brightness ()
   (run-shell-command "xbacklight -inc 100")
   (let ((level 100))
@@ -94,15 +76,14 @@ for the mode line. "
 	     (unless (<= level 0)
 	       (run-shell-command "xbacklight -dec 5")
 	       (setf level (- level 5))))
-	    ((= inter 0) ;; go to 1% brightness
-	     (setf level 1)
-	     (run-shell-command "xbacklight -dec 100")
-	     (sleep .2))
-	    ((= inter 2) ;; reset to 10% brightness
+	    ((= inter 0) ;; reset to 5% brightness
 	     (setf level 10)
 	     (run-shell-command "xbacklight -dec 100")
 	     (sleep .2)
-	     (run-shell-command "xbacklight -inc 10"))
+	     (run-shell-command "xbacklight -inc 5"))
+	    ((= inter 2)
+	     (setf level 100)
+	     (run-shell-command "xbacklight -inc 100"))
 	    (t
 	     nil))
       (setf *brightness-mode-line* (format nil "Brightness: ~a%"
@@ -253,7 +234,6 @@ the mode line to show the volume "
 	(night 4500)
 	(late-night 3000))
     (lambda ()
-      (run-shell-command "redshift -x")
       (cond ((equalp tracker "Neutral")
 	     (run-shell-command (format nil "redshift -O ~D" night))
 	     (setf tracker "Night"))
@@ -261,6 +241,7 @@ the mode line to show the volume "
 	     (run-shell-command (format nil "redshift -O ~D" late-night))
 	     (setf tracker "Late-Night"))
 	    ((equalp tracker "Late-Night")
+	     (run-shell-command "redshift -x")
 	     (setf tracker "Neutral"))
 	    (t
 	     (message "something needs debugging in commands-utilities-lisp..."))))))

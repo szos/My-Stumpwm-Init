@@ -21,6 +21,34 @@ call it from within the body with '(recurse args)'"
 		,@body))
        (recurse ,@args))))
 
+(defmacro define-interactive-keymap-no-return (name (&key on-enter on-exit abort-if) &body key-bindings)
+  "defines an interactive keymap, but doesnt define any exit commands."
+  (let* ((command (if (listp name) (car name) name))
+         (exit-command (format nil "EXIT-~A" command))
+         (keymap (gensym "m")))
+    (multiple-value-bind (key-bindings decls docstring)
+        (stumpwm::parse-body key-bindings :documentation t)
+      `(let ((,keymap (stumpwm::make-sparse-keymap)))
+         ,@(loop for keyb in key-bindings
+                 collect `(stumpwm::define-key ,keymap ,@keyb))
+         ;; (define-key ,keymap (kbd "RET") ,exit-command)
+         ;; (stumpwm::define-key ,keymap (kbd "C-g") ,exit-command)
+         ;; (stumpwm::define-key ,keymap (kbd "ESC") ,exit-command)
+
+         (stumpwm::defcommand ,name () ()
+           ,@decls
+           ,(or docstring
+                (format nil "Starts interactive command \"~A\"" command))
+           ,@(when abort-if `((when (funcall ,abort-if)
+                                (return-from ,command))))
+
+           ,@(when on-enter `((funcall ,on-enter)))
+           (stumpwm::enter-interactive-keymap ,keymap (quote ,command)))
+
+         (stumpwm::defcommand ,(intern exit-command) () ()
+           ,@(when on-exit `((funcall ,on-exit)))
+           (stumpwm::exit-interactive-keymap (quote ,command)))))))
+
 ;(load "/home/shos/.stumpwm.d/misc-macros.lisp")
 ;; timeout wait.
 (setf *timeout-wait* 15)

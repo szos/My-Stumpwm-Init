@@ -539,9 +539,9 @@ either sends the {kbd} result or "
 
 ;; Graphics
 (defcommand darktable () () 
-    (run-raise-or-list "darktable" '(:class "Photo Editor")))
+  (run-raise-or-list "darktable" '(:class "Photo Editor")))
 (defcommand gimp () () 
-    (run-raise-or-list "gimp" '(:class "Photo Editor")))
+  (run-raise-or-list "gimp" '(:class "Photo Editor")))
 
 (defmacro conde (&body body)
   (if (not body)

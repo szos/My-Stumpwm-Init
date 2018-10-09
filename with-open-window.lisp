@@ -111,10 +111,43 @@ title to the title of the document opened - generally Untitled 1. "
   (float-in-tiles cwin :new-class "DDTerm" :width 1000
 		  :height 350 :x 460 :y 18))
 
+(defun with-window-hanger-test-restrictor (cwin lwin)
+  "this is the same as with-window-hanger, except you can pass in a function as the restrictor. 
+if the restrictor is nil, if it matches a function that gets called and returns t, or if 
+the restrictor is string= to the windowclass then the function sent via 
+with-open-window will be called and this function removed from the hook. 
+otherwise this function will continue to hang, and be re-evaluated next 
+focus change. "
+  (declare (ignore lwin))
+  (let ((func (first *with-window*))
+	(args (second *with-window*))
+	(restrictor (third *with-window*)))
+    (when (or (not restrictor) (handler-case (funcall restrictor cwin)
+				 (type-error nil)
+				 (undefined-function nil))
+	      (string= restrictor (window-class cwin)))
+      (unwind-protect
+	   (if args
+	       (funcall func cwin args)
+	       (funcall func cwin))
+	(remove-hook *focus-window-hook* 'with-window-hanger)))))
 
+(defmacro with-open-window-test (cmd restrictor function &rest args)
+  "stores the {function}, {args}, and {restrict-class} variables in a dynamic
+variable so that with-window-hanger can grab them. it then hangs 
+with-window-hanger on focus-window-hook. then it checks if {cmd} is a string, 
+in which case its a shell command and is run. otherwise its treated as a 
+stumpwm command (or list of commands) and run that way."
+  `(progn
+     (setf (first *with-window*) ,function)
+     (setf (second *with-window*) ,args)
+     (setf (third *with-window*) ,restrictor)
+     (add-hook *focus-window-hook* 'with-window-hanger-test-restrictor)
+     ,(if (stringp cmd)
+	 `(run-shell-command ,cmd)
+	 (if (cdr cmd)
+	     `(reduce #'run-commands ,cmd)
+	     `(funcall #'run-commands ,(car cmd))))))
 
-;; (defcommand scroll-4 () ()
-;;   (run-shell-command "xte \"mouseclick 4\""))
+;; (with-open-window-test "cmd" (lambda (cwin) (do-something)) (lambda (cwin)))
 
-;; (translation-keys:define-key-trans "|Float|DDTerm"
-;;     `(("C-M-p" "")))

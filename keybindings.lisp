@@ -172,11 +172,18 @@ this lets you create hydras for related behavior. "
 (define-key *top-map* (kbd "XF86AudioLowerVolume") "volume -5")
 (define-key *top-map* (kbd "XF86AudioMute") "vol-reset")
 
+(define-key *top-map* (kbd "M-XF86AudioMute") "volume-overdrive 100")
 (define-key *top-map* (kbd "M-XF86AudioRaiseVolume") "volume-overdrive 200")
 (define-key *top-map* (kbd "M-XF86AudioLowerVolume") "volume-overdrive 150")
-(define-key *top-map* (kbd "M-XF86AudioMute") "volume-overdrive 100")
+
 (define-key *top-map* (kbd "XF86MonBrightnessDown") "brightness-change -1")
+(define-key *top-map* (kbd "C-XF86MonBrightnessDown") "brightness-change 0")
+
 (define-key *top-map* (kbd "XF86MonBrightnessUp") "brightness-change 1")
+(define-key *top-map* (kbd "C-XF86MonBrightnessUp") "brightness-change 2")
+
+(define-key *top-map* (kbd "M-XF86MonBrightnessUp") "")
+
 (define-key *top-map* (kbd "SunPrint_Screen") "screenshot")
 
 ;; (define-key *top-map* (kbd "s-:") "window-send-string Ø")
