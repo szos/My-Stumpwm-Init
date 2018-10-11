@@ -21,6 +21,14 @@ call it from within the body with '(recurse args)'"
 		,@body))
        (recurse ,@args))))
 
+(defmacro π (&body body)
+  "just an expanding progn"
+  (progn
+    ,@body))
+
+;;; heres the expansion I want:
+;;; <*volume* 1> => (funcall *volume* 1)
+
 (defmacro define-interactive-keymap-no-return (name (&key on-enter on-exit abort-if) &body key-bindings)
   "defines an interactive keymap, but doesnt define any exit commands."
   (let* ((command (if (listp name) (car name) name))
@@ -31,10 +39,6 @@ call it from within the body with '(recurse args)'"
       `(let ((,keymap (stumpwm::make-sparse-keymap)))
          ,@(loop for keyb in key-bindings
                  collect `(stumpwm::define-key ,keymap ,@keyb))
-         ;; (define-key ,keymap (kbd "RET") ,exit-command)
-         ;; (stumpwm::define-key ,keymap (kbd "C-g") ,exit-command)
-         ;; (stumpwm::define-key ,keymap (kbd "ESC") ,exit-command)
-
          (stumpwm::defcommand ,name () ()
            ,@decls
            ,(or docstring
@@ -204,7 +208,6 @@ call it from within the body with '(recurse args)'"
   
 
 ;; load files
-(load "~/.stumpwm.d/interactive-maps.lisp")
 (load "~/.stumpwm.d/with-open-window.lisp")
 ;; (load "~/.stumpwm.d/commands-reclass.lisp")
 (load "~/.stumpwm.d/windows-groups-frames.lisp")
@@ -374,3 +377,22 @@ call it from within the body with '(recurse args)'"
            ;; just warn them and go ahead as scheduled
            (warn "Don't know how to encode ~s" key)
            (values code (x11-mods key))))))
+
+
+(defcommand duckduckgo-focus-text () ()
+  (run-commands
+   "meta C-l"
+   "meta TAB"
+   "meta TAB"
+   "meta TAB"))
+
+(defcommand ff-check-site () ()
+  (run-commands
+   "meta F6"
+   "meta C-c")
+  (let ((x-sel (get-x-selection)))
+    (if (string= (subseq x-sel 0 5) "https")
+    	(message "~A" (subseq x-sel 8))
+    	(message "~A" (subseq x-sel 7)))
+    ;; (message "~A" x-sel)
+    ))

@@ -8,7 +8,7 @@
 ;;;;;;;;;;;;;;;;;;;;
 
 (defcommand web-browser () ()
-n  (tor))
+  (tor))
 
 ;;; TOR
 (defcommand tor () ()

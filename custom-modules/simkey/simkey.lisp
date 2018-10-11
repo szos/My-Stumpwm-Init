@@ -11,10 +11,11 @@
 (defmacro define-top-map-key (key command)
   "this works best! it stores things in actual code which will
 let us call it in the definer macro. "
-  `(stumpwm::define-key stumpwm::*top-map* ,key ,command)
-  `(if (assoc ',key *top-binds* :test #'equal)
-       (setf (cdr (assoc ',key *top-binds* :test #'equal)) ,command)
-       (push '(,key . ,command) *top-binds*)))
+  `(progn
+     (stumpwm::define-key stumpwm::*top-map* ,key ,command)
+     (if (assoc ',key *top-binds* :test #'equal)
+	 (setf (cdr (assoc ',key *top-binds* :test #'equal)) ,command)
+	 (push '(,key . ,command) *top-binds*))))
 
 (defun remap-top-binds ()
   (mapcar #'(lambda (element)

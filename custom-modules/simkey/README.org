@@ -17,6 +17,15 @@ This is the stub README.txt for the "simkey" project.
    (define-key-translation "Class" 
      ((kbd "binding") "command")
      ...)
+
+   Occasionally simkey will cause stumpwm to get confused about the top map. I think this
+   is due to switching windows to fast, and causing a buildup of focus-window-hook calls
+   This can be fixed be resetting/restarting Stumpwm. 
+   
+   additionally simkey will get confused if things are redefined too many times. for this
+   reason I suggest storing all simkey defenitions and bindings in a seperate file. then
+   connect via slime and set *top-binds* to nil (i plan to implement a reset command). 
+   Then navigate to your simkey file, and in slime do C-c C-k to compile the whole buffer.
     
 *** DEFINE-TOP-MAP-KEY  --  Handling Top Map Keys
     Because of how this module handles
