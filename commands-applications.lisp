@@ -8,7 +8,7 @@
 ;;;;;;;;;;;;;;;;;;;;
 
 (defcommand web-browser () ()
-  (tor))
+n  (tor))
 
 ;;; TOR
 (defcommand tor () ()
@@ -110,3 +110,8 @@
 (defcommand file-manager () ()
   "runs your file manager in the current buffer"
   (run-raise-or-pull "thunar" '(:class "File Manager")))
+
+(defcommand etcher () ()
+  (run-shell-command "/opt/Etcher/etcher-electron"))
+
+;;; 

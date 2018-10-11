@@ -1,8 +1,8 @@
-;;;; translating-tests.lisp
+;;;; simkey.lisp
 
-(in-package #:translating-tests)
+(in-package #:simkey)
 
-;;; "translating-tests" goes here. Hacks and glory await!
+;;; "simkey" goes here. Hacks and glory await!
 
 (defparameter *translation-commands* (make-hash-table :test 'equalp))
 

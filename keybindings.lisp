@@ -167,30 +167,40 @@ this lets you create hydras for related behavior. "
 ;; (define-key *top-map* (kbd "C-o") "modal-controller")
 ;; volume
 
-;; define system keys. 
-(define-key *top-map* (kbd "XF86AudioRaiseVolume") "volume 5")
-(define-key *top-map* (kbd "XF86AudioLowerVolume") "volume -5")
-(define-key *top-map* (kbd "XF86AudioMute") "vol-reset")
+(simkey:define-top-map-key (kbd "C-;") *root-map*)
 
-(define-key *top-map* (kbd "M-XF86AudioMute") "volume-overdrive 100")
-(define-key *top-map* (kbd "M-XF86AudioRaiseVolume") "volume-overdrive 200")
-(define-key *top-map* (kbd "M-XF86AudioLowerVolume") "volume-overdrive 150")
+;; define system keys.
+(simkey:define-top-map-key (kbd "XF86AudioRaiseVolume") "volume 5")
+;; (define-key *top-map* (kbd "XF86AudioRaiseVolume") "volume 5")
+(simkey:define-top-map-key (kbd "XF86AudioLowerVolume") "volume -5")
+;; (define-key *top-map* (kbd "XF86AudioLowerVolume") "volume -5")
+(simkey:define-top-map-key (kbd "XF86AudioMute") "vol-reset")
+;; (define-key *top-map* (kbd "XF86AudioMute") "vol-reset")
 
-(define-key *top-map* (kbd "XF86MonBrightnessDown") "brightness-change -1")
-(define-key *top-map* (kbd "C-XF86MonBrightnessDown") "brightness-change 0")
+(simkey:define-top-map-key (kbd "M-XF86AudioMute") "volume-overdrive 100")
+(simkey:define-top-map-key (kbd "M-XF86AudioRaiseVolume") "volume-overdrive 200")
+(simkey:define-top-map-key (kbd "M-XF86AudioLowerVolume") "volume-overdrive 150")
 
-(define-key *top-map* (kbd "XF86MonBrightnessUp") "brightness-change 1")
-(define-key *top-map* (kbd "C-XF86MonBrightnessUp") "brightness-change 2")
+(simkey:define-top-map-key (kbd "XF86MonBrightnessDown") "brightness-change -1")
+(simkey:define-top-map-key (kbd "C-XF86MonBrightnessDown") "brightness-change 0")
 
-(define-key *top-map* (kbd "M-XF86MonBrightnessUp") "")
+(simkey:define-top-map-key (kbd "XF86MonBrightnessUp") "brightness-change 1")
+(simkey:define-top-map-key (kbd "C-XF86MonBrightnessUp") "brightness-change 2")
 
-(define-key *top-map* (kbd "SunPrint_Screen") "screenshot")
+(simkey:define-top-map-key (kbd "M-XF86MonBrightnessUp") "")
+
+(simkey:define-top-map-key (kbd "SunPrint_Screen") "screenshot")
 
 ;; (define-key *top-map* (kbd "s-:") "window-send-string Ø")
 ;; (define-key *top-map* (kbd "s-;") "window-send-string \"ø\"")
 
 ;; øØ æÆ åÅ provided by xmodmap
 (define-key *root-map* (kbd "C-d") "describe-key");;
+
+;;(load-module "translatin;; g-tests")
+;; (translating-tests:def-trans-keys "Firefox"
+;;     ((kbd "C-n") "meta Down")
+;;   ((kbd "C-p") "meta Up"))
 
 
 ;;;; load translation keys
@@ -299,3 +309,23 @@ this lets you create hydras for related behavior. "
 		    ((kbd "=") "meta C-0") ;; reset zoom
 		    ((kbd "0") "meta C-0")))
 	     ("this is a hydra, defining C-c as quit, etc..."))))
+
+
+
+
+
+
+;;;;;;;;;;;;;;;;;;;;;;
+;; (define-key *top-map* (kbd "M-XF86AudioMute") "volume-overdrive 100")
+;; (define-key *top-map* (kbd "M-XF86AudioRaiseVolume") "volume-overdrive 200")
+;; (define-key *top-map* (kbd "M-XF86AudioLowerVolume") "volume-overdrive 150")
+
+;; (define-key *top-map* (kbd "XF86MonBrightnessDown") "brightness-change -1")
+;; (define-key *top-map* (kbd "C-XF86MonBrightnessDown") "brightness-change 0")
+
+;; (define-key *top-map* (kbd "XF86MonBrightnessUp") "brightness-change 1")
+;; (define-key *top-map* (kbd "C-XF86MonBrightnessUp") "brightness-change 2")
+
+;; (define-key *top-map* (kbd "M-XF86MonBrightnessUp") "")
+
+;; (define-key *top-map* (kbd "SunPrint_Screen") "screenshot")
