@@ -128,6 +128,7 @@ the mode line to show the volume "
 	     (message "Max Volume.  ~D%" tracker))
 	    ((< (+ tracker change) 0)
 	     (run-shell-command "pactl set-sink-volume 0 0% ")
+	     ;; (run-shell-command "amixer set Master ")
 	     (setf *volume-percentage* "Volume: ^2^B0%^^b^6 ")
 	     (message "Min Volume. ~D%" tracker))
 	    (t
@@ -146,7 +147,9 @@ the mode line to show the volume "
 		   (t
 		    ;;format red 
 		    (setf *volume-percentage* (format nil "Volume: ^1^B ~D%^^b^6 " tracker))))
-	     (run-shell-command (format nil "pactl set-sink-volume 0 +~D%" change)))))))
+	     ;; (run-shell-command (format nil "pactl set-sink-volume 0 +~D%" change))
+	     (run-shell-command (format nil "amixer set Master ~D%" tracker))
+	     )))))
 
 (defun volume-setter-nmax ()
   "this function generates a closure for controlling volume via the shell 
@@ -158,7 +161,7 @@ the mode line to show the volume "
 	(limit 200) ;; the highest value max can be
 	(tracker 0))
     (lambda (change &optional (nmax 100 nmax-provided-p))
-      (when (and nmax-provided-p (<= nmax limit))
+      (when (and nmax-provided-p (<= nmax 200)) ;; set a limit to the overdrive 
 	(setf max nmax))
       (cond ((> (+ tracker change) max)
 	     (setf *volume-percentage* "Volume: ^1^B100%^^b^6 ")
@@ -166,16 +169,16 @@ the mode line to show the volume "
 	     (message "Max Volume.  ~D%" tracker)
 	     (sleep .2))
 	    ((< (+ tracker change) 0)
-	     (run-shell-command "pactl set-sink-volume 0 0% ")
+	     (run-shell-command "pactl set-sink-volume 0 0%")
 	     (setf *volume-percentage* "Volume: ^2^B0%^^b^6 ")
 	     (message "Min Volume. ~D%" tracker)
 	     (sleep .2))
 	    (t
 	     (setf tracker (+ tracker change))
 	     (cond ((< (* (/ tracker max) 100) 10)
-		    ;; format green and add spaces
+		    ;; format green and add spaces - less than 10%
 		    (setf *volume-percentage* (format nil "Volume: ^2^B  ~D%^^b^6 " (round (* (/ tracker max) 100)))))
-		   ((= (* (/ tracker max) 100) 100)
+		   ((= (* (/ tracker max) 100) 100) ;; max volume
 		    (setf *volume-percentage* (format nil "Volume: ^1^B~D%^^b^6 " (round (* (/ tracker max) 100)))))
 		   ((<= (* (/ tracker max) 100) 50)
 		    ;;format green
@@ -186,8 +189,8 @@ the mode line to show the volume "
 		   (t
 		    ;;format red 
 		    (setf *volume-percentage* (format nil "Volume: ^1^B ~D%^^b^6 " (round (* (/ tracker max) 100))))))
-	     (run-shell-command (format nil "pactl set-sink-volume 0 +~D%" change))
-	     )))))
+	     ;;(run-shell-command (format nil "pactl set-sink-volume 0 +~D%" change))
+	     (format-shell-command "amixer set Master ~D%" tracker))))))
 
 (defparameter *volume* (volume-setter-nmax))
 
@@ -209,48 +212,48 @@ the mode line to show the volume "
 ;; tracks the status of the mode line to ensure stumptray is safely enabled and disabled. 
 ;; mode line is off --- 0
 ;; mode line is on ---- 1
-(defun mode-liner ()
-  (let ((mode-line-tracker 0))
-    (lambda ()
-      (cond ((= mode-line-tracker 0)
-	     (mode-line)
-	     (stumptray:stumptray)
-	     (setf mode-line-tracker 1))
-	    ((= mode-line-tracker 1)
-	     (stumptray:stumptray)
-	     (mode-line)
-	     (setf mode-line-tracker 0))
-	    (t
-	     (message "there is something wrong with the closure from the function mode-liner"))))))
+;; (defun mode-liner ()
+;;   (let ((mode-line-tracker 0))
+;;     (lambda ()
+;;       (cond ((= mode-line-tracker 0)
+;; 	     (mode-line)
+;; 	     (stumptray:stumptray)
+;; 	     (setf mode-line-tracker 1))
+;; 	    ((= mode-line-tracker 1)
+;; 	     (stumptray:stumptray)
+;; 	     (mode-line)
+;; 	     (setf mode-line-tracker 0))
+;; 	    (t
+;; 	     (message "there is something wrong with the closure from the function mode-liner"))))))
 
-(defparameter *mode-line* (mode-liner))
-(when *initializing* (funcall *mode-line*))
+;; (defparameter *mode-line* (mode-liner))
+;; (when *initializing* (funcall *mode-line*))
 
-(defcommand modeline-stumptray-toggle () ()
-  (funcall *mode-line*))
+;; (defcommand modeline-stumptray-toggle () ()
+;;   (funcall *mode-line*))
 
 (defun scrn-temper ()
-  (let ((tracker "Neutral")
-	(night 4500)
-	(late-night 3000))
-    (lambda ()
-      (cond ((equalp tracker "Neutral")
-	     (run-shell-command (format nil "redshift -O ~D" night))
-	     (setf tracker "Night"))
-	    ((equalp tracker "Night")
-	     (run-shell-command (format nil "redshift -O ~D" late-night))
-	     (setf tracker "Late-Night"))
-	    ((equalp tracker "Late-Night")
-	     (run-shell-command "redshift -x")
-	     (setf tracker "Neutral"))
-	    (t
-	     (message "something needs debugging in commands-utilities-lisp..."))))))
+  (let ((temps '#1=(4500 3000 0  . #1#))
+	(tt 0))
+    (lambda (&key (new-temp nil) (reset-temps nil))
+      (setf tt (pop temps))
+      (if (= tt 0)
+	  (format-shell-command "redshift -x")
+	  (format-shell-command "redshift -O ~D" tt)))))
+
+(defun decircularize (clist &key (first-item nil))
+  (let ((length (how-long-circular clist)))))
 
 (defparameter *temperature* (scrn-temper))
 
 (defcommand cycle-temperature () ()
   (funcall *temperature*))
 
+(defcommand redshift (amnt) ((:number "Temp:  "))
+  "depends upon redshift command line utility. "
+  (run-shell-command "redshift -x")
+  (unless (= amnt 0)
+    (format-shell-command "redshift -O ~D" amnt)))
 
 (define-interactive-keymap system-manipulation ()
   ((kbd "C-v") "volume -10")

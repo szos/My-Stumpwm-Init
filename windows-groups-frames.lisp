@@ -14,7 +14,7 @@
   (gnewbg "Media")
   (gnewbg "Dev")
   (run-shell-command "nm-applet")
-  (run-shell-command "./pia.sh")
+  ;; (run-shell-command "./pia.sh")
   (run-shell-command "blueman-applet"))
 
 (defcommand pulley (search-term) ((:string "search term:  "))
@@ -92,15 +92,19 @@ point is in form (x . y)"
 
 (defun window-matches-properties-fuzzy (window &key class instance type role title)
   "Returns T if window matches all the given properties"
+  ;; (when (string= (window-group window) ".trash")
+  ;;   (return-from window-matches-properties-fuzzy nil))
   (and
-   (if class (search class (window-class window)) t)
-   (if instance (search instance (window-res window)) t)
-   (if type (search type (window-type window)) t)
-   (if role (search role (window-role window)) t)
-   ;; (if role 
-   ;;     (string-match (window-role window) role) t)
-   (if title (search title (window-title window)) t)
-   t))
+     (if (string= (group-name (window-group window)) ".trash") nil t)
+     (if class (search class (window-class window)) t)
+     (if instance (search instance (window-res window)) t)
+     (if type (search type (window-type window)) t)
+     (if role (search role (window-role window)) t)
+     ;; (if role 
+     ;;     (string-match (window-role window) role) t)
+     (if title (search title (window-title window)) t)
+     t)
+  )
 
 (defun find-matching-windows-fuzzy (props all-groups all-screens)
   "Returns list of windows containing @var{props}. eg if its passed 'h' 
@@ -114,11 +118,10 @@ by group and window number, with group being more significant (think radix sort)
                       (mapcan (lambda (s) (screen-windows s)) screens)
                       (group-windows (current-group))))
          (matches (remove-if-not (lambda (w)
-                                   (apply 'window-matches-properties-fuzzy w props))
-                                 winlist)))
+				   (apply 'window-matches-properties-fuzzy w props))
+				 winlist)))
     (stable-sort (sort matches #'< :key #'window-number)
                  #'< :key (lambda (w) (group-number (window-group w))))))
-
 
 (defun fuzzy-finder (&optional 
 		       (props '(:class "") props-supplied-p)
@@ -135,12 +138,10 @@ returns the window, otherwise user selects window from menu. "
                           collect (find-matching-windows-fuzzy x all-groups all-screens)))))
       (case (length matches)
         (0 (message "Nothing Found..."))
-      	(1 (car matches))
-        (t (select-window-from-menu matches fmt))))
+      	(t (select-window-from-menu matches fmt))))
     (let ((matches (find-matching-windows-fuzzy props all-groups all-screens)))
       (case (length matches)
 	(0 (message "Nothing Found..."))
-	(1 (car matches))
 	(t (select-window-from-menu matches fmt))))))
 
 (defcommand test-fuzzy-function (str type) ((:string "Search for: ")

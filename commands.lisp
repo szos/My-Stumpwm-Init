@@ -120,9 +120,9 @@ multiple matches, generate a window list"
     (run-shell-command cmd)))
 ;; end
 
-(defcommand all-pullall () ()
+(defcommand pullstr-all (str) ((:string "pull: "))
   (let* ((*window-format* "%n%s%c => %30t")
-	 (win (fuzzy-finder)))
+	 (win (fuzzy-finder `((:class ,str) (:title ,str) (:role ,str)))))
     (when win (pull win))))
 
 (defcommand pullstr (str) ((:string "pull: "))
@@ -135,11 +135,6 @@ multiple matches, generate a window list"
   ((kbd "C-'") "gnext"))
 
 ;; end functions
-
-;; set up local dynamic vars for commands
-;; tracks the status of the mode line to ensure stumptray is safely enabled and disabled. 
-;; mode line is off --- 0
-;; mode line is on ---- 1
 
 ;;; command to list fonts in xtf::*font-cache*
 (defcommand list-ttf-fonts () ()
@@ -225,6 +220,10 @@ based on users global settings"
 				  `(("raise" (raise ,win))
 				    ("focus" (focus-all ,win))
 				    ("delete" (delete-window ,win))))))))
+
+(defcommand reclass (class) ((:string "New Class:  "))
+  (setf (window-class (current-window)) class))
+
 ;;; Load Application Commands.
 (load "~/.stumpwm.d/commands-applications.lisp")
 

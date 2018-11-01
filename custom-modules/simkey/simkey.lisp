@@ -51,9 +51,9 @@ it and then enter that translation map. "
 we run the exit command. otherwise we do nothing. "
   (let ((prev-map (gethash :previous *translation-commands*)))
     (when prev-map
+      (setf (gethash :previous *translation-commands*) nil)
       (stumpwm::run-commands
-       (format nil "EXIT-~A" prev-map)))
-    (setf (gethash :previous *translation-commands*) nil)))
+       (format nil "EXIT-~A" prev-map)))))
 
 (defun bind-previous-map (map-name)
   "we store the map in the hash table so we know which one to exit. "

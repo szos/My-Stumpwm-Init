@@ -10,6 +10,10 @@
 (defcommand web-browser () ()
   (tor))
 
+;;; NEXT
+(defcommand next-browser () ()
+  (run-shell-command "xterm -e sbcl --load /home/shos/next-0.08/next/start-next.lisp"))
+
 ;;; TOR
 (defcommand tor () ()
   (run-raise-or-pull "./TOR/Browser/start-tor-browser" '(:class "Tor Browser")))
@@ -22,6 +26,14 @@
 (defcommand firefox-n () ()
   "run firefox"
   (run-shell-command "firejail firefox"))
+
+(defcommand firefox-p () ()
+  "run private firefox window in firejail"
+  (run-shell-command "firejail firefox --private-window"))
+
+(defcommand firefox-no-jail () ()
+  "run firefox without firejail"
+  (run-shell-command "firefox"))
 
 ;;; WATERFOX
 (defcommand waterfox () ()
@@ -106,6 +118,14 @@
 ;;;;;;;;;;;;;;
 
 (defprogram-shortcut thunar)
+
+(defcommand midnight () ()
+  (midnight-commander))
+
+(defun midnight-commander ()
+  (with-open-window "xterm -e mc" "XTerm"
+		    #'(lambda (cwin)
+			(re-splat-window cwin :new-class "MC"))))
 
 (defcommand file-manager () ()
   "runs your file manager in the current buffer"

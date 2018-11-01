@@ -1,84 +1,39 @@
 (in-package :stumpwm)
 
-(defmacro define-hydra-macro (map key &rest bindings)
-  "this macro takes a map, a key, and some more bindings, and generates a hydra
-which lets you create something like a prefix key. for example if you want to 
-bind a command to 'prefix C-x n' youd write 
-
-;;(define-hydra *root-map* (kbd \"C-x\")
-;;  ((kbd \"n\") command)) 
-
-this lets you create hydras for related behavior. "
+(defmacro define-hydra (&body bindings)
   (let* ((m (gensym))
 	 (bind-to-m (mapcar #'(lambda (bind)
 				(push m bind)
 				(push 'define-key bind))
 			    bindings)))
-    `(define-key ,map ,key
-       (let ((,m (make-sparse-keymap)))
-	 ,@bind-to-m
-	 ,m))))
-
-(defmacro defhydra (&rest bindings)
-    (let* ((m (gensym))
-	   (bind-to-m (mapcar #'(lambda (bind)
-				  (push m bind)
-				  (push 'define-key bind))
-			      bindings)))
-      `(let ((,m (make-sparse-keymap)))
-	 ,@bind-to-m
-	 ,m)))
-
-(defmacro define-lambda-hydra (&rest bindings)
-  (let ((bind-to-m (mapcar #'(lambda (bind)
-			       (push 'm bind)
-			       (push 'define-key bind))
-			   bindings)))
-    `(let ((m (make-sparse-keymap)))
+    `(let ((,m (make-sparse-keymap)))
        ,@bind-to-m
-       m)))
-
-(defcommand define-hydra (bindings)
-    ((:rest "bindings: "))
-  (let ((k (make-sparse-keymap)))
-    (when  (stringp bindings)
-      (setf bindings (read-from-string bindings)))
-    (mapcar #'(lambda (binding)
-		(funcall #'define-key k (eval (car binding)) (second binding)))
-	    bindings)
-    k))
-
-(defmacro defer-hydra-macro (bindings)
-  (let ((k (gensym)))
-    `(let ((,k (make-sparse-keymap))
-	   (bb ',bindings))
-       (when (stringp bb)
-	  (setf bb (read-from-string bb)))
-       (mapcar #'(lambda (binding)
-		   (funcall #'define-key ,k (eval (car binding)) (second binding)))
-	       bb)
-       ,k)))
-
-(defcommand redef-top () ()
-  (define-key *top-map* (kbd "C-q")
-    *top-redef*))
+       ,m)))
 
 (defparameter *top-redef*
-  (defhydra
-      ((kbd "l") "slimeball")
-      ((kbd "r") "replball")
+  (define-hydra
+    ((kbd "l") "slimeball")
+    ((kbd "r") "replball")
     ((kbd "n") "notes")
     ((kbd "f") "access-floats")
     ((kbd "F") "access-floats-global")
     ((kbd "s") "snap-floating-windows")
     ((kbd "m") "sys-maniper")
     ((kbd "q") "meta q")
-    ((kbd "t") (defhydra
-		   ((kbd "t") "toggle-always-on-top")
-		   ((kbd "g") "toggle-always-show")))))
+    ((kbd "t") (define-hydra
+		 ((kbd "t") "toggle-always-on-top")
+		 ((kbd "g") "toggle-always-show")))))
 
-(define-key *top-map* (kbd "C-M-s-q")
-  *top-redef*)
+(defcommand redef-top () ()
+  (define-key *top-map* (kbd "C-q")
+    *top-redef*))
+
+(redef-top)
+
+(define-key *root-map* (kbd "S")
+  (define-hydra
+    ((kbd "v") "hsplit")
+    ((kbd "h") "vsplit")))
 
 (defcommand sys-maniper () ()
   (system-manipulation)
@@ -103,8 +58,8 @@ this lets you create hydras for related behavior. "
 
 (define-key *root-map* (kbd "s")
   (define-hydra
-      '(((kbd "v") "hsplit")
-	((kbd "h") "vsplit"))))
+    ((kbd "v") "hsplit")
+    ((kbd "h") "vsplit")))
 
 ;; (define-key *root-map* (kbd "C-s") "hsplit-equally")
 ;; (define-key *root-map* (kbd "M-s") "vsplit-equally")
@@ -116,7 +71,7 @@ this lets you create hydras for related behavior. "
 (define-key *root-map* (kbd "M-f") "move-focus right")
 (define-key *root-map* (kbd "M-n") "move-focus down")
 (define-key *root-map* (kbd "M-p") "move-focus up")
-(define-key *root-map* (kbd "m") "modeline-stumptray-toggle")
+(define-key *root-map* (kbd "m") "mode-line")
 
 ;; Browse somewhere
 ;; (define-key *root-map* (kbd "b") "colon1 exec firefox http://www.")
@@ -159,14 +114,15 @@ this lets you create hydras for related behavior. "
 ;; cycle groups
 (define-key *root-map* (kbd "C-M-f") "gnext")
 (define-key *root-map* (kbd "C-M-b") "gprev")
-(define-key *root-map* (kbd "space") "command-mode")
+;; (define-key *root-map* (kbd "space") "command-mode")
 (define-key *root-map* (kbd "B") "brightness-map")
 (define-key *root-map* (kbd "y") "kill-yt")
-
 
 (define-key *root-map* (kbd "C-d") "describe-key")
 
 (define-key *root-map* (kbd "'") "pullstr")
+
+(define-key *root-map* (kbd ";") "colon") ;; needed for some reason.
 
 ;; define our modal control keybind - this is special.
 ;; (define-key *top-map* (kbd "C-o") "modal-controller")
@@ -175,7 +131,7 @@ this lets you create hydras for related behavior. "
 (load-module :simkey)
 (add-hook *focus-window-hook* 'simkey:trans-keys-hangar)
 
-(simkey:define-top-map-key (kbd "C-;") *root-map*)
+(simkey:define-top-map-key (kbd "C-;") *root-map*) 
 
 ;; define system keys.
 (simkey:define-top-map-key (kbd "XF86AudioRaiseVolume") "volume 5")
@@ -214,12 +170,14 @@ this lets you create hydras for related behavior. "
   ((kbd "C-g") "meta ESC")
   
   ((kbd "C-v") "meta SunPageDown")
-  ((kbd "M-v") "meta SunPageup")
+  ((kbd "M-v") "meta SunPageUp")
   ((kbd "M-<") "meta Home")
   ((kbd "M->") "meta End")
   
   ((kbd "C-p") "meta Up")
   ((kbd "C-n") "meta Down")
+  ((kbd "C-f") "meta Right")
+  ((kbd "C-b") "meta Left")
   
   ((kbd "C-s") "meta C-g")
   ((kbd "C-r") "meta C-G")
@@ -235,20 +193,20 @@ this lets you create hydras for related behavior. "
   ((kbd "M-F") "meta C-S-SunPageDown")
 
   ((kbd "C-x") (define-hydra
-		   '(((kbd "k") "meta C-w") ;; close tab
-		     ((kbd "K") "meta C-S-w") ;; close window
-		     ((kbd "u") "meta C-T") ;; undo close tab
-		     ((kbd "C-f") "meta '") ;; search links
-		     ((kbd "n") "meta C-n") ;; new window
-		     ((kbd "p") "meta C-P") ;; new private window
-		     ((kbd "X") "meta F6")
-		     ((kbd "x") "duckduckgo-focus-text")
-		     ((kbd "+") "meta C-+")
-		     ((kbd "-") "meta C--")
-		     ((kbd "0") "meta C-0")
+  		 ((kbd "k") "meta C-w") ;; close tab
+  		 ((kbd "K") "meta C-S-w") ;; close window
+  		 ((kbd "u") "meta C-T") ;; undo close tab
+  		 ((kbd "C-f") "meta '") ;; search links
+  		 ((kbd "n") "meta C-n") ;; new window
+  		 ((kbd "p") "meta C-P") ;; new private window
 
-		     ((kbd "b") "meta C-[")
-		     ((kbd "f") "meta C-]"))))
+  		 ((kbd "X") "meta F6")
+  		 ((kbd "x") "ff-focus-search-bar")
+  		 ((kbd "+") "meta C-+")
+  		 ((kbd "-") "meta C--")
+  		 ((kbd "0") "meta C-0")
+  		 ((kbd "b") "meta C-[")
+  		 ((kbd "f") "meta C-]")))
   ;; hyper rat
   ((kbd "M-r") "ratsnap")
   ((kbd "H-j") "ratsnap left 75")
@@ -263,11 +221,11 @@ this lets you create hydras for related behavior. "
   ((kbd "H-s-SPC") "ratclick 2")
   ((kbd "s-SPC") "ratclick 3"))
 
-(simkey:define-key-translation "Tor"
+(simkey:define-key-translation "Tor Browser"
   ((kbd "C-g") "meta ESC")
   
   ((kbd "C-v") "meta SunPageDown")
-  ((kbd "M-v") "meta SunPageup")
+  ((kbd "M-v") "meta SunPageUp")
   ((kbd "M-<") "meta Home")
   ((kbd "M->") "meta End")
   
@@ -288,20 +246,20 @@ this lets you create hydras for related behavior. "
   ((kbd "M-F") "meta C-S-SunPageDown")
 
   ((kbd "C-x") (define-hydra
-		   '(((kbd "k") "meta C-w") ;; close tab
-		     ((kbd "K") "meta C-S-w") ;; close window
-		     ((kbd "u") "meta C-T") ;; undo close tab
-		     ((kbd "C-f") "meta '") ;; search links
-		     ((kbd "n") "meta C-n") ;; new window
-		     ((kbd "p") "meta C-P") ;; new private window
-		     ((kbd "X") "meta F6")
-		     ((kbd "x") "duckduckgo-focus-text")
-		     ((kbd "+") "meta C-+")
-		     ((kbd "-") "meta C--")
-		     ((kbd "0") "meta C-0")
+		 ((kbd "k") "meta C-w") ;; close tab
+		 ((kbd "K") "meta C-S-w") ;; close window
+		 ((kbd "u") "meta C-T") ;; undo close tab
+		 ((kbd "C-f") "meta '") ;; search links
+		 ((kbd "n") "meta C-n") ;; new window
+		 ((kbd "p") "meta C-P") ;; new private window
+		 ((kbd "X") "meta F6")
+		 ((kbd "x") "ff-focus-search-bar")
+		 ((kbd "+") "meta C-+")
+		 ((kbd "-") "meta C--")
+		 ((kbd "0") "meta C-0")
 
-		     ((kbd "b") "meta C-[")
-		     ((kbd "f") "meta C-]"))))
+		 ((kbd "b") "meta C-[")
+		 ((kbd "f") "meta C-]")))
   ;; hyper rat
   ((kbd "M-r") "ratsnap")
   ((kbd "H-j") "ratsnap left 75")
@@ -317,12 +275,20 @@ this lets you create hydras for related behavior. "
   ((kbd "s-SPC") "ratclick 3"))
 
 (simkey:define-key-translation "Riot"
+  ((kbd "C-n") "meta Down")
+  ((kbd "C-p") "meta Up")
   ((kbd "C-f") "meta Right")
   ((kbd "C-b") "meta Left")
   ((kbd "C-a") "meta Home")
   ((kbd "C-e") "meta End")
+  
   ((kbd "M-b") "meta C-Left")
   ((kbd "M-f") "meta C-Right")
+  ((kbd "C-w") "meta C-x")
+  ((kbd "M-y") "meta C-c")
+  ((kbd "C-y") "meta C-v")
+
+  ((kbd "C-g") "meta ESC")
   ((kbd "M-DEL") "meta C-DEL"))
 
 (simkey:define-key-translation "calibre"
