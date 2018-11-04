@@ -91,6 +91,9 @@
 (defcommand riot () ()
   (run-raise-or-pull "riot-desktop" '(:class "Riot")))
 
+(defcommand signal-messenger () ()
+  (run-raise-or-pull "signal-desktop" '(:class "Signal")))
+
 ;;;;;;;;;;;;;;;;;;;;;
 ;;; MEDIA PLAYERS ;;;
 ;;;;;;;;;;;;;;;;;;;;;

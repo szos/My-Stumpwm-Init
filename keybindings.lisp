@@ -50,7 +50,7 @@
 ;; Read some doc
 (define-key *root-map* (kbd "d") "exec gv")
 ;; window
-(define-key *root-map* (kbd "C-'") "gnext-map")
+;; (define-key *root-map* (kbd "C-'") "gnext-map")
 
 ;; (define-key *root-map* (kbd "f") "notes")
 ;; (define-key *root-map* (kbd "C-f") "access-floats")
@@ -59,7 +59,9 @@
 (define-key *root-map* (kbd "s")
   (define-hydra
     ((kbd "v") "hsplit")
-    ((kbd "h") "vsplit")))
+    ((kbd "V") "vsplit-equally")
+    ((kbd "h") "vsplit")
+    ((kbd "H") "hsplit-equally")))
 
 ;; (define-key *root-map* (kbd "C-s") "hsplit-equally")
 ;; (define-key *root-map* (kbd "M-s") "vsplit-equally")
@@ -95,14 +97,14 @@
 ;; (define-key *root-map* (kbd "M-j") "group-hop")
 ;; Implement remove split, maybe remove split horizontal and 
 ;; vertical
-(define-key *root-map* (kbd "C-r") "balanced-remove-split") ; removes split and switches to previous
+(define-key *root-map* (kbd "M-r") "balanced-remove-split") ; removes split and switches to previous
 (define-key *root-map* (kbd "r") "remove")
 ;; (define-)
 ;; switching layouts
 ;; (define-key *root-map* (kbd "C-l") "change-kb-layout")
 ;; modal mouse controller:
-(define-key *root-map* (kbd "M-r") "ratcontrol")
-;; expose all windows in group
+;; (define-key *root-map* (kbd "M-r") "ratcontrol")
+;; expose all windows in group è
 (define-key *root-map* (kbd "C-e") "expose")
 ;;brightness:
 ;; (define-key *root-map* (kbd "-") "brightness-")
@@ -116,7 +118,7 @@
 (define-key *root-map* (kbd "C-M-b") "gprev")
 ;; (define-key *root-map* (kbd "space") "command-mode")
 (define-key *root-map* (kbd "B") "brightness-map")
-(define-key *root-map* (kbd "y") "kill-yt")
+;; (define-key *root-map* (kbd "y") "kill-yt")
 
 (define-key *root-map* (kbd "C-d") "describe-key")
 
@@ -178,6 +180,8 @@
   ((kbd "C-n") "meta Down")
   ((kbd "C-f") "meta Right")
   ((kbd "C-b") "meta Left")
+  ((kbd "C-e") "meta End")
+  ((kbd "C-a") "meta Home")
   
   ((kbd "C-s") "meta C-g")
   ((kbd "C-r") "meta C-G")
@@ -199,6 +203,7 @@
   		 ((kbd "C-f") "meta '") ;; search links
   		 ((kbd "n") "meta C-n") ;; new window
   		 ((kbd "p") "meta C-P") ;; new private window
+		 ((kbd "a") "meta C-a")
 
   		 ((kbd "X") "meta F6")
   		 ((kbd "x") "ff-focus-search-bar")
