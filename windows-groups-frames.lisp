@@ -95,16 +95,15 @@ point is in form (x . y)"
   ;; (when (string= (window-group window) ".trash")
   ;;   (return-from window-matches-properties-fuzzy nil))
   (and
-     (if (string= (group-name (window-group window)) ".trash") nil t)
-     (if class (search class (window-class window)) t)
-     (if instance (search instance (window-res window)) t)
-     (if type (search type (window-type window)) t)
-     (if role (search role (window-role window)) t)
-     ;; (if role 
-     ;;     (string-match (window-role window) role) t)
-     (if title (search title (window-title window)) t)
-     t)
-  )
+   (if (string= (group-name (window-group window)) ".trash") nil t)
+   (if class (search (string-upcase class) (string-upcase (window-class window))) t)
+   (if instance (search (string-upcase instance) (string-upcase (window-res window))) t)
+   (if type (search (string-upcase type) (string-upcase (window-type window))) t)
+   (if role (search (string-upcase role) (string-upcase (window-role window))) t)
+   ;; (if role 
+   ;;     (string-match (window-role window) role) t)
+   (if title (search (string-upcase title) (string-upcase (window-title window))) t)
+   t))
 
 (defun find-matching-windows-fuzzy (props all-groups all-screens)
   "Returns list of windows containing @var{props}. eg if its passed 'h' 
@@ -137,12 +136,18 @@ returns the window, otherwise user selects window from menu. "
                     (loop for x in props
                           collect (find-matching-windows-fuzzy x all-groups all-screens)))))
       (case (length matches)
-        (0 (message "Nothing Found..."))
-      	(t (select-window-from-menu matches fmt))))
+        (0 (progn (message "Nothing Found...")
+		  :not-found))
+      	(t (select-window-from-menu matches fmt)))
+      ;; (message "~S" matches)
+      )
     (let ((matches (find-matching-windows-fuzzy props all-groups all-screens)))
       (case (length matches)
-	(0 (message "Nothing Found..."))
-	(t (select-window-from-menu matches fmt))))))
+      	(0 (progn (message "Nothing Found...")
+		  :not-found))
+      	(t (select-window-from-menu matches fmt)))
+      ;; (message "~S" matches)
+      )))
 
 (defcommand test-fuzzy-function (str type) ((:string "Search for: ")
 					    (:string "type: "))

@@ -22,9 +22,15 @@ multiple possible parameter searches, with an example call looking like:
 				    props
 				    `(,props)))))
     ((not win)
+     (let ((opt (second (select-from-menu (current-screen) `(("RUN" ,cmd)
+     							     ("EXIT" nil))))))
+       (if (stringp opt)
+     	   (run-shell-command opt)
+     	   (eval opt))))
+    ((equalp win :not-found)
      (if (stringp cmd)
-	 (run-shell-command cmd)
-	 (eval cmd)))
+     	 (run-shell-command cmd)
+     	 (eval cmd)))
     ((or (window-visible-p win) (not (eq (window-group win) (current-group))))
      (raise win))
     (t

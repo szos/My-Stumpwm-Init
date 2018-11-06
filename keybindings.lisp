@@ -157,6 +157,21 @@
 
 (simkey:define-top-map-key (kbd "SunPrint_Screen") "screenshot")
 
+;;; Define quick and easy mouse commands using Hyper:
+
+(simkey:define-top-map-key (kbd "M-r") "ratsnap")
+(simkey:define-top-map-key (kbd "H-j") "ratsnap left 75")
+(simkey:define-top-map-key (kbd "H-k") "ratsnap down 75")
+(simkey:define-top-map-key (kbd "H-l") "ratsnap right 75")
+(simkey:define-top-map-key (kbd "H-i") "ratsnap up 75")
+(simkey:define-top-map-key (kbd "H-s-j") "ratsnap left 20")
+(simkey:define-top-map-key (kbd "H-s-k") "ratsnap down 20")
+(simkey:define-top-map-key (kbd "H-s-l") "ratsnap right 20")
+(simkey:define-top-map-key (kbd "H-s-i") "ratsnap up 20")
+(simkey:define-top-map-key (kbd "H-SPC") "ratclick 1")
+(simkey:define-top-map-key (kbd "H-s-SPC") "ratclick 2")
+(simkey:define-top-map-key (kbd "s-SPC") "ratclick 3")
+
 ;; (define-key *top-map* (kbd "s-:") "window-send-string Ø")
 ;; (define-key *top-map* (kbd "s-;") "window-send-string \"ø\"")
 
@@ -184,6 +199,7 @@
   ((kbd "C-a") "meta Home")
   
   ((kbd "C-s") "meta C-g")
+  ((kbd "C-S") "meta C-f")
   ((kbd "C-r") "meta C-G")
   ((kbd "M-s") "meta '")
 
@@ -211,20 +227,7 @@
   		 ((kbd "-") "meta C--")
   		 ((kbd "0") "meta C-0")
   		 ((kbd "b") "meta C-[")
-  		 ((kbd "f") "meta C-]")))
-  ;; hyper rat
-  ((kbd "M-r") "ratsnap")
-  ((kbd "H-j") "ratsnap left 75")
-  ((kbd "H-k") "ratsnap down 75")
-  ((kbd "H-l") "ratsnap right 75")
-  ((kbd "H-i") "ratsnap up 75")
-  ((kbd "H-s-j") "ratsnap left 20")
-  ((kbd "H-s-k") "ratsnap down 20")
-  ((kbd "H-s-l") "ratsnap right 20")
-  ((kbd "H-s-i") "ratsnap up 20")
-  ((kbd "H-SPC") "ratclick 1")
-  ((kbd "H-s-SPC") "ratclick 2")
-  ((kbd "s-SPC") "ratclick 3"))
+  		 ((kbd "f") "meta C-]"))))
 
 (simkey:define-key-translation "Tor Browser"
   ((kbd "C-g") "meta ESC")
@@ -264,20 +267,7 @@
 		 ((kbd "0") "meta C-0")
 
 		 ((kbd "b") "meta C-[")
-		 ((kbd "f") "meta C-]")))
-  ;; hyper rat
-  ((kbd "M-r") "ratsnap")
-  ((kbd "H-j") "ratsnap left 75")
-  ((kbd "H-k") "ratsnap down 75")
-  ((kbd "H-l") "ratsnap right 75")
-  ((kbd "H-i") "ratsnap up 75")
-  ((kbd "H-s-j") "ratsnap left 20")
-  ((kbd "H-s-k") "ratsnap down 20")
-  ((kbd "H-s-l") "ratsnap right 20")
-  ((kbd "H-s-i") "ratsnap up 20")
-  ((kbd "H-SPC") "ratclick 1")
-  ((kbd "H-s-SPC") "ratclick 2")
-  ((kbd "s-SPC") "ratclick 3"))
+		 ((kbd "f") "meta C-]"))))
 
 (simkey:define-key-translation "Riot"
   ((kbd "C-n") "meta Down")

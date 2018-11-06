@@ -21,7 +21,7 @@
 ;;; FIREFOX
 (defcommand firefox () ()
   "run firefox or set focus to it f already running"
-  (run-raise-or-pull "firejail firefox" '(:class "Firefox")))
+  (run-raise-or-pull "firejail firefox" '(:class "firefox")))
 
 (defcommand firefox-n () ()
   "run firefox"

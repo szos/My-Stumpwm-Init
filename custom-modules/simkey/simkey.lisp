@@ -27,10 +27,10 @@ let us call it in the definer macro. "
 interactive keymap with no return bindings, and adds the key to our database of
 key translations"
   `(let ((kmap-name ,(format nil "~A-translations" class)))
-     (stumpwm::define-interactive-keymap-no-return ,(intern (format nil "~A-translations" class)) ()
+     (stumpwm::define-interactive-keymap ,(intern (remove #\SPACE (format nil "~A-translations" class))) (:exit-on nil)
        ,@(remap-top-binds)
        ,@kmap)
-     (add-keys-to-hash ,class ,(format nil "~A-translations" class))
+     (add-keys-to-hash ,class ,(remove #\SPACE (format nil "~A-translations" class)))
      kmap-name))
 
 (defun trans-keys-hangar (cwin lwin)

@@ -6,10 +6,6 @@
 (ql:quickload :clx-truetype)
 (ql:quickload :clx)
 (ql:quickload :utilities)
-;; (require :asdf)
-;; (asdf:load-asd "/home/shos/next-0.08/next/next.asd")
-;; (ql:quickload :next)
-;; (ql:quickload :next/gtk)
 
 (load "~/.stumpwm.d/utilities.lisp")
 
@@ -28,7 +24,7 @@
 ;; (set-prefix-key (kbd "s"))
 ;; properly
 
-(setf *mouse-focus-policy* :sloppy)
+;; (setf *mouse-focus-policy* :sloppy)
 
 ;;swap caps and ctrl
 ;; (run-shell-command "setxkbmap -option ctrl:swapcaps")
@@ -37,21 +33,28 @@
 ;; this is for an alt green enabled english modmap for more modifiers and keys!
 (run-shell-command "setxkbmap no")
 (run-shell-command "xmodmap ~/.stumpwm.d/modmaps/eng-no.modmap")
-(defparameter *xmodmaps*
-  (let ((x nil))
-    (lambda ()
-      (if (not x)
-	  (progn
-	    (setf x t)
-	    (run-shell-command "xmodmap ~/.stumpwm.d/modmaps/eng-altgrn.modmap")
-	    (message "xmodmap set to eng-altgrn.modmap"))
-	  (progn
-	    (setf x nil)
-	    (run-shell-command "xmodmap ~/.stumpwm.d/modmaps/eng-no.modmap")
-	    (message "xmodmap set to eng-no.modmap"))))))
 
-(defcommand change-layout () ()
-  (funcall *xmodmaps*))
+(defcommand keyset-norwegian () ()
+  (run-shell-command "xmodmap ~/.stumpwm.d/modmaps/eng-no.modmap")
+  (message "Keymap is now set to norwegian/english"))
+(defcommand keyset-symbols () ()
+  (run-shell-command "xmodmap ~/.stumpwm.d/modmaps/eng-altgrn.modmap")
+  (message "Keymap is now set to english/intl symbols"))
+;; (defparameter *xmodmaps*
+;;   (let ((x nil))
+;;     (lambda ()
+;;       (if (not x)
+;; 	  (progn
+;; 	    (setf x t)
+;; 	    (run-shell-command "xmodmap ~/.stumpwm.d/modmaps/eng-altgrn.modmap")
+;; 	    (message "xmodmap set to eng-altgrn.modmap"))
+;; 	  (progn
+;; 	    (setf x nil)
+;; 	    (run-shell-command "xmodmap ~/.stumpwm.d/modmaps/eng-no.modmap")
+;; 	    (message "xmodmap set to eng-no.modmap"))))))
+
+;; (defcommand change-layout () ()
+;;   (funcall *xmodmaps*))
 
 ;; (run-shell-command "xscreensaver")
 ;; (run-shell-command "xfce4-power-manager")
@@ -59,8 +62,8 @@
 (run-shell-command "/usr/bin/lxqt-policykit-agent")
 
 ;; (set-module-dir "/home/shos/stumpwm/stumpwm-contrib")
-(init-load-path  "/home/shos/stumpwm/stumpwm-contrib")
-(add-to-load-path "~/.stumpwm.d/custom-modules")
+
+(init-load-path "~/.stumpwm.d/custom-modules")
 
 ;; (defcommand define-hydra (bindings)
 ;;     ((:rest "bindings: "))
@@ -142,7 +145,7 @@
 ;; End initialization of modules
 
 ;; define global that can printout battery status
-
+n
 ;; (defvar *battery-status-command*
 ;;   "acpi -b | awk -F '[ ,]' '{printf \"%s%s\", $3, $5}' | sed s/Discharging/\-/ | sed s/Unknown// | sed s/Full// | sed s/Charging/+/")
 
