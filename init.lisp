@@ -77,9 +77,9 @@
 
 ;; begin loading modules:
 (load-module "stumptray")
-(toggle-mode-line (current-screen) (current-head))
-(stumptray:stumptray)
-(stumptray:add-mode-line-hooks)
+;; (toggle-mode-line (current-screen) (current-head))
+;; (stumptray:stumptray)
+;; (stumptray:add-mode-line-hooks)
 
 (load-module "ratcontrol")
 (load-module "app-menu")
@@ -112,11 +112,11 @@
 ;; Initialize modules
 ;; (app-menu:load-menu-file "/home/shos/.stumpwm.d/appmenu-pinned.lisp")
 
-(setf *mode-line-background-color* "#1f1f1f")
-(setf *mode-line-border-color* (seventh *colors*))
+;; (setf *mode-line-background-color* "#1f1f1f")
+;; (setf *mode-line-border-color* (seventh *colors*))
 
 (setf *screen-mode-line-format*
-      (list "^6^B%B^b | %c%t %f | %l|[%M] %N| "
+      (list "^6^B%B^b | %c%t %f | %l[%M] "
 	    ;;'(:eval (room nil))
 	    '(:eval *volume-percentage*)
 	    '(:eval *brightness-mode-line*)
@@ -145,7 +145,7 @@
 ;; End initialization of modules
 
 ;; define global that can printout battery status
-n
+
 ;; (defvar *battery-status-command*
 ;;   "acpi -b | awk -F '[ ,]' '{printf \"%s%s\", $3, $5}' | sed s/Discharging/\-/ | sed s/Unknown// | sed s/Full// | sed s/Charging/+/")
 
@@ -251,7 +251,7 @@ n
 
 ;;;; final set ups here:
 ;; (when *initializing*
-;;   (mode-line)
+;;   (mod-eline)
 ;;   (trash-window)
 ;;   (gnext)
 ;;   (trash-window))

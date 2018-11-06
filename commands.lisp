@@ -21,7 +21,7 @@ multiple possible parameter searches, with an example call looking like:
   (cond-let ((win (fuzzy-finder (if (listp (car props))
 				    props
 				    `(,props)))))
-    ((not win)
+    ((not win) ;; this means that fuzzy finder was quit by the user. 
      (let ((opt (second (select-from-menu (current-screen) `(("RUN" ,cmd)
      							     ("EXIT" nil))))))
        (if (stringp opt)
@@ -104,37 +104,47 @@ multiple matches, generate a window list"
     				      (all-screens *run-or-raise-all-screens*))
   "see if the props bring anything, if not run cmd."
   (if-let ((match (fuzzy-finder props *window-format* all-groups all-screens)))
-    (focus-all match)
+    (if (equalp match :not-found)
+	(run-shell-command cmd)
+	(focus-all match))
     (run-shell-command cmd)))
 
 (defun run-or-pull-or-list (cmd props &optional (all-groups *run-or-raise-all-groups*)
     				     (all-screens *run-or-raise-all-screens*))
   "see if the props bring anything, if not run cmd."
   (if-let ((match (fuzzy-finder props *window-format* all-groups all-screens)))
-    (pull match)
+    (if (equalp match :not-found)
+	(run-shell-command cmd)
+	(pull match))
     (run-shell-command cmd)))
 
 (defmacro run-raise (cmd class)
   `(if-let ((win (fuzzy-finder '((:class ,class)))))
-     (raise win)
+     (if (equalp win :not-found)
+	 (run-shell-command ,cmd)
+	 (raise win))
      (run-shell-command ,cmd)))
 
 
 (defun run-pull (cmd class)
   (if-let ((win (fuzzy-finder `((:class ,class)))))
-    (pull win)
+    (if (equalp win :not-found)
+	(run-shell-command cmd)
+	(pull win))
     (run-shell-command cmd)))
 ;; end
 
 (defcommand pullstr-all (str) ((:string "pull: "))
   (let* ((*window-format* "%n%s%c => %30t")
 	 (win (fuzzy-finder `((:class ,str) (:title ,str) (:role ,str)))))
-    (when win (pull win))))
+    (when (and win (not (equalp win :not-found)))
+      (pull win))))
 
 (defcommand pullstr (str) ((:string "pull: "))
   (let* ((*window-format* "%n%s%c => %30t")
 	 (win (fuzzy-finder `((:class ,str)))))
-    (when win (pull win))))
+    (when (and win (not (equalp win :not-found)))
+      (pull win))))
 
 (define-interactive-keymap gnext-map (:on-enter #'gnext) 
   ((kbd "'") "gnext");cycle groups
@@ -149,6 +159,7 @@ multiple matches, generate a window list"
 	(4-to nil)
 	(formatter ""))
     (maphash #'(lambda (key value)
+		 (declare (ignore value))
 		 (setf list-font-keys (cons key list-font-keys))
 		 ;;(format t "Font: ~S |||| ~S~%" key value)
 		 )
@@ -213,19 +224,21 @@ multiple matches, generate a window list"
 (defcommand access-floats () ()
   "looks for windows floated with the (with-open-window... #'float-in-tiles)"
   (when-let ((win (fuzzy-finder '((:class "|FLOAT|")) *window-format* nil nil)))
-    (eval (cadr (select-from-menu (current-screen)
-				  `(("raise" (raise ,win))
-				    ("focus" (focus-all ,win))
-				    ("delete" (delete-window ,win))))))))
+    (unless (equalp win :not-found)
+      (eval (cadr (select-from-menu (current-screen)
+				    `(("raise" (raise ,win))
+				      ("focus" (focus-all ,win))
+				      ("delete" (delete-window ,win)))))))))
 
 (defcommand access-floats-global () ()
   "looks for windows floated with the (with-open-window... #'float-in-tiles) 
 based on users global settings"
   (when-let ((win (fuzzy-finder '((:class "|FLOAT|")) *window-format* t t)))
-    (eval (cadr (select-from-menu (current-screen)
-				  `(("raise" (raise ,win))
-				    ("focus" (focus-all ,win))
-				    ("delete" (delete-window ,win))))))))
+    (unless (equalp win :not-found)
+      (eval (cadr (select-from-menu (current-screen)
+				    `(("raise" (raise ,win))
+				      ("focus" (focus-all ,win))
+				      ("delete" (delete-window ,win)))))))))
 
 (defcommand reclass (class) ((:string "New Class:  "))
   (setf (window-class (current-window)) class))
@@ -261,24 +274,6 @@ based on users global settings"
 
 (defcommand kill-yt () ()
   (kill-window *kill-test*))
-
-(defcommand icecat () ()
-  "icarun raise or list icecat"
-  (run-or-raise-with-win "~/icecat/icecat" "Icecat" )
-  (run-raise-or-list "~/icecat/icecat" '(:class "Icecat")))
-
-(defun run-or-raise-with-win (cmd str &optional (function nil) &key (args nil) (restrictor nil))
-  (if-let ((win (fuzzy-finder `((:class ,str)))))
-    (raise win)
-    (with-open-window cmd restrictor function args)))
-
-(defcommand icecat-p () ()
-  "icarun raise or list icecat"
-  (run-raise-or-list "~/icecat/icecat --private-window" '(:class "Icecat")))
-
-(defcommand icecat-n () ()
-  "create new instance of portable icecat"
-  (run-shell-command "~/icecat/icecat" ))
 
 (defcommand birdfont () ()
   (run-shell-command "flatpak run org.birdfont.BirdFont/x86_64/master"))
@@ -407,6 +402,11 @@ based on users global settings"
 								   :height 400))))
 (defcommand slimeball () ()
   (if-let ((win (fuzzy-finder '((:class "|FLOAT|Slimeball")))))
+    ;; (not (equal win :not-found)) ;; this function and others like it
+    ;; need to be rewritten to support the new fuzzy finder. specifically,
+    ;; ff now sends back a keyword :not-found if the window isnt found, allowing
+    ;; for distinction between unfound windows, and the user quitting in the
+    ;; middle of selection. 
     (if (eq (window-group win) (current-group))
 	(raise win)
 	(eval (second (select-from-menu (current-screen)
@@ -583,7 +583,7 @@ and assign it to the argument provided."
 
 (defcommand watch-ascii-vid (file) ((:file "File Path:  "))
   (run-shell-command
-   (format nil "xfce4-terminal -e CACA_DRIVER=ncurses mplayer -vo caca -quiet ~a" pathname)))
+   (format nil "xfce4-terminal -e CACA_DRIVER=ncurses mplayer -vo caca -quiet ~a" file)))
 
 (defcommand calibre () ()
   (run-raise-or-pull "calibre" '(:class "calibre")))
