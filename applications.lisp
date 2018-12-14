@@ -1,4 +1,5 @@
 (in-package :stumpwm)
+
 ;;;;;;;;;;;;;;;;;;;;
 ;;; APPLICATIONS ;;;
 ;;;;;;;;;;;;;;;;;;;;
@@ -12,7 +13,13 @@
 
 ;;; NEXT
 (defcommand next-browser () ()
-  (run-shell-command "xterm -e sbcl --load /home/shos/next-0.08/next/start-next.lisp"))
+  (run-shell-command "firejail next")
+  ;;(run-shell-command "xterm -e sbcl --load /home/shos/next-0.08/next/start-next.lisp")
+  )
+
+(defcommand next-browser-force-exit () ()
+  (run-shell-command "killall next")
+  (run-shell-command "killall next-gtk-webkit"))
 
 ;;; TOR
 (defcommand tor () ()
@@ -57,22 +64,14 @@
   "run a new conkeror instance"
   (run-shell-command "firejail conkeror"))
 
-;;; W3M
-(defcommand w3m () ()
-  (run-raise-or-pull
-   '(with-open-window "xterm -e w3m duckduckgo.com/lite/" "XTerm"
-     #'reclassify-window "W3M")
-   '(:class "W3M")))
+;;; ICECAT
+(defcommand icecat () ()
+  "run icecat"
+  (run-raise-or-pull "~/icecat/icecat" '(:class "Icecat")))
 
-(defcommand w3m-new () ()
-  "runs w3m open to duckduckgo"
-  (with-open-window "xterm -e w3m -s duckduckgo.com/lite/" "XTerm"
-     #'reclassify-window "W3M"))
-
-(defcommand w3m-manual () ()
-  "runs w3m open the manual (cloned locally)"
-  (with-open-window "xterm -e w3m  ~/w3m.manual.html" "XTerm"
-     #'reclassify-window "W3M Manual"))
+(defcommand icecat-n () ()
+  "run new icecat instance"
+  (run-shell-command "firejail ~/icecat/icecat"))
 
 ;;;;;;;;;;;;;;;;;;;;;;;
 ;;; EMAIL CHAT & IM ;;;
@@ -80,16 +79,19 @@
 
 ;;; THUNDERBIRD
 (defcommand thunderbird () ()
-  (run-raise-or-pull "firejail thunderbird" '((:class "Thunderbird"))))
+  (run-raise-or-pull "thunderbird" '((:class "Thunderbird"))))
 
 (defcommand mail () ()
-  (run-raise-or-pull "firejail thunderbird" '((:class "Thunderbird"))))
+  (run-raise-or-pull "thunderbird" '((:class "Thunderbird"))))
 ;;; QTOX
 (defcommand qtox () ()
   (run-raise-or-pull "qtox" '((:class "qTox"))))
 ;;; RIOT
 (defcommand riot () ()
   (run-raise-or-pull "riot-desktop" '(:class "Riot")))
+
+(defcommand fractal () ()
+  (run-raise-or-pull "fractal" '(:class "Fractal")))
 
 (defcommand signal-messenger () ()
   (run-raise-or-pull "signal-desktop" '(:class "Signal")))
@@ -125,10 +127,10 @@
 (defcommand midnight () ()
   (midnight-commander))
 
-(defun midnight-commander ()
-  (with-open-window "xterm -e mc" "XTerm"
-		    #'(lambda (cwin)
-			(re-splat-window cwin :new-class "MC"))))
+;; (defun midnight-commander ()
+;;   (with-open-window "xterm -e mc" "XTerm"
+;; 		    #'(lambda (cwin)
+;; 			(re-splat-window cwin :new-class "MC"))))
 
 (defcommand file-manager () ()
   "runs your file manager in the current buffer"
@@ -137,4 +139,12 @@
 (defcommand etcher () ()
   (run-shell-command "/opt/Etcher/etcher-electron"))
 
-;;; 
+;;;;;;;;;;;;;;;;;
+;;; Documents ;;;
+;;;;;;;;;;;;;;;;;
+
+(defcommand libreoffice () ()
+  (run-raise-or-pull "libreoffice" '(:class "libreoffice-writer")))
+
+(defcommand emacs () ()
+  (run-raise-or-pull "emacs" '((:class "Emacs"))))

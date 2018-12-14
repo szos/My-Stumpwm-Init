@@ -10,51 +10,12 @@
        ,@bind-to-m
        ,m)))
 
-(defparameter *top-redef*
+(defparameter *test-hydra*
   (define-hydra
-    ((kbd "l") "slimeball")
-    ((kbd "r") "replball")
-    ((kbd "n") "notes")
-    ((kbd "f") "access-floats")
-    ((kbd "F") "access-floats-global")
-    ((kbd "s") "snap-floating-windows")
-    ((kbd "m") "sys-maniper")
-    ((kbd "q") "meta q")
-    ((kbd "t") (define-hydra
-		 ((kbd "t") "toggle-always-on-top")
-		 ((kbd "g") "toggle-always-show")))))
+    ((kbd "n") "meta C-n")))
 
-(defcommand redef-top () ()
-  (define-key *top-map* (kbd "C-q")
-    *top-redef*))
-
-(redef-top)
-
-(define-key *root-map* (kbd "S")
-  (define-hydra
-    ((kbd "v") "hsplit")
-    ((kbd "h") "vsplit")))
-
-(defcommand sys-maniper () ()
-  (system-manipulation)
-  (sys-manip-help))
-
-(define-interactive-keymap brightness-map ()
-  ((kbd "=") "brightness-change 1")
-  ((kbd "+") "brightness-change 1")
-  ((kbd "-") "brightness-change -1")
-  ((kbd "_") "brightness-change -1")
-  ((kbd "p") "brightness-change 1")
-  ((kbd "n") "brightness-change -1"))
-
-;; Read some doc
-(define-key *root-map* (kbd "d") "exec gv")
-;; window
-;; (define-key *root-map* (kbd "C-'") "gnext-map")
-
-;; (define-key *root-map* (kbd "f") "notes")
-;; (define-key *root-map* (kbd "C-f") "access-floats")
-;; (define-key *root-map* (kbd "M-f") "access-floats-global")
+(undefine-key *root-map* (kbd "C-S"))
+(undefine-key *root-map* (kbd "S"))
 
 (define-key *root-map* (kbd "s")
   (define-hydra
@@ -63,229 +24,220 @@
     ((kbd "h") "vsplit")
     ((kbd "H") "hsplit-equally")))
 
-;; (define-key *root-map* (kbd "C-s") "hsplit-equally")
-;; (define-key *root-map* (kbd "M-s") "vsplit-equally")
-;; (define-key *root-map* (kbd "s") "hsplit-equally 2")
-;; (define-key *root-map* (kbd "S") "vsplit-equally 2")
-(undefine-key *root-map* (kbd "C-S"))
-(define-key *root-map* (kbd "M-q") "system-manipulation")
 (define-key *root-map* (kbd "M-b") "move-focus left")
 (define-key *root-map* (kbd "M-f") "move-focus right")
 (define-key *root-map* (kbd "M-n") "move-focus down")
 (define-key *root-map* (kbd "M-p") "move-focus up")
+
+(define-key *root-map* (kbd "C-f") "move-focus right")
+(define-key *root-map* (kbd "C-b") "move-focus left")
+(define-key *root-map* (kbd "C-n") "pull-hidden-next")
+(define-key *root-map* (kbd "C-p") "pull-hidden-previous")
+
 (define-key *root-map* (kbd "m") "mode-line")
-
-;; Browse somewhere
-;; (define-key *root-map* (kbd "b") "colon1 exec firefox http://www.")
-;; Ssh somewhere
-;; (define-key *root-map* (kbd "C-s") "colon1 exec xterm -e ssh ")
-;; Lock screen
-(define-key *root-map* (kbd "C-l") "exec xlock")
-;;call grouplist to switch groups (workspaces)
-(define-key *root-map* (kbd "g") "grouplist")
-;;jump straight to eval prompt
-(define-key *root-map* (kbd "M-e") "eval")
-;;change behavior of prefix-w (normally calls windows) to call windowlist isntead
-;; (define-key *root-map* (kbd "w") "pull-from-windowlist-formatted") ;; possibly missing/unused. 
-(define-key *root-map* (kbd "C-w") "vgroups")
-;;define the menu key from app-menu module
-(define-key *root-map* (kbd "j") "show-menu")
-;;define key for showing clipboard history
-;; (define-key *root-map* (kbd "C-y") "show-clipboard-history")
-;;implement our window and group hoppers
-;; (define-key *root-map* (kbd "M-w") "window-hop")
-;; (define-key *root-map* (kbd "M-j") "group-hop")
-;; Implement remove split, maybe remove split horizontal and 
-;; vertical
-(define-key *root-map* (kbd "M-r") "balanced-remove-split") ; removes split and switches to previous
 (define-key *root-map* (kbd "r") "remove")
-;; (define-)
-;; switching layouts
-;; (define-key *root-map* (kbd "C-l") "change-kb-layout")
-;; modal mouse controller:
-;; (define-key *root-map* (kbd "M-r") "ratcontrol")
-;; expose all windows in group è
-(define-key *root-map* (kbd "C-e") "expose")
-;;brightness:
-;; (define-key *root-map* (kbd "-") "brightness-")
-;; (define-key *root-map* (kbd "=") "brightness+")
-;; volume:
-(define-key *root-map* (kbd "v") "volume") 
 
-;;;;; TOP MAP BINDINGS
-;; cycle groups
 (define-key *root-map* (kbd "C-M-f") "gnext")
 (define-key *root-map* (kbd "C-M-b") "gprev")
-;; (define-key *root-map* (kbd "space") "command-mode")
-(define-key *root-map* (kbd "B") "brightness-map")
-;; (define-key *root-map* (kbd "y") "kill-yt")
 
 (define-key *root-map* (kbd "C-d") "describe-key")
-
 (define-key *root-map* (kbd "'") "pullstr")
+(define-key *root-map* (kbd ";") "colon")
+(define-key *root-map* (kbd "w") "windowlist")
 
-(define-key *root-map* (kbd ";") "colon") ;; needed for some reason.
+;;; this is for define-remapped-keys; it allows us to call functions.
+(define-key *root-map* (kbd "M-s-H-h") "ff-focus-search-bar") 
 
-;; define our modal control keybind - this is special.
-;; (define-key *top-map* (kbd "C-o") "modal-controller")
-;; volume
+(define-key *top-map* (kbd "M-F1") "volume-set 0")
+(define-key *top-map* (kbd "M-F2") "volume -5")
+(define-key *top-map* (kbd "M-F3") "volume 5")
 
-(load-module :simkey)
-(add-hook *focus-window-hook* 'simkey:trans-keys-hangar)
 
-(simkey:define-top-map-key (kbd "C-;") *root-map*) 
+(define-key *top-map* (kbd "XF86AudioLowerVolume") "volume -5")
+(define-key *top-map* (kbd "XF86AudioRaiseVolume") "volume 5")
+(define-key *top-map* (kbd "XF86AudioMute") "volume-set 0")
 
-;; define system keys.
-(simkey:define-top-map-key (kbd "XF86AudioRaiseVolume") "volume 5")
-;; (define-key *top-map* (kbd "XF86AudioRaiseVolume") "volume 5")
-(simkey:define-top-map-key (kbd "XF86AudioLowerVolume") "volume -5")
-;; (define-key *top-map* (kbd "XF86AudioLowerVolume") "volume -5")
-(simkey:define-top-map-key (kbd "XF86AudioMute") "vol-reset")
-;; (define-key *top-map* (kbd "XF86AudioMute") "vol-reset")
+(define-key *top-map* (kbd "XF86MonBrightnessDown") "brightness-increment -5")
+(define-key *top-map* (kbd "C-XF86MonBrightnessDown") "brightness-set 0")
 
-(simkey:define-top-map-key (kbd "M-XF86AudioMute") "volume-overdrive 100")
-(simkey:define-top-map-key (kbd "M-XF86AudioRaiseVolume") "volume-overdrive 200")
-(simkey:define-top-map-key (kbd "M-XF86AudioLowerVolume") "volume-overdrive 150")
+(define-key *top-map* (kbd "XF86MonBrightnessUp") "brightness-increment 5")
+(define-key *top-map* (kbd "C-XF86MonBrightnessUp") "brightness-set 100")
 
-(simkey:define-top-map-key (kbd "XF86MonBrightnessDown") "brightness-change -1")
-(simkey:define-top-map-key (kbd "C-XF86MonBrightnessDown") "brightness-change 0")
+;;; block out function key functionality for doing other things. 
+(defcommand test-msg () ()
+  (message "registered function key"))
 
-(simkey:define-top-map-key (kbd "XF86MonBrightnessUp") "brightness-change 1")
-(simkey:define-top-map-key (kbd "C-XF86MonBrightnessUp") "brightness-change 2")
+(define-key *top-map* (kbd "F1") "volume-set 0")
+(define-key *top-map* (kbd "F2") "volume -5")
+(define-key *top-map* (kbd "F3") "volume 5")
+(define-key *top-map* (kbd "F4") "test-msg")
+(define-key *top-map* (kbd "F5") "test-msg")
+(undefine-key *top-map* (kbd "F6"))
+(define-key *top-map* (kbd "F7") "test-msg")
+(define-key *top-map* (kbd "F8") "test-msg")
+(define-key *top-map* (kbd "F9") "test-msg")
+(undefine-key *top-map* (kbd "F10"); "test-msg"
+	      )
+(define-key *top-map* (kbd "F11") "brightness-increment -5")
+(define-key *top-map* (kbd "F12") "brightness-increment 5")
 
-;; (simkey:define-top-map-key (kbd "M-XF86MonBrightnessUp") "brightness-change ")
+(defun remove-http/s (str)
+  "takes a url, and returns the url without the http/s://"
+  (if (string= (subseq str 0 5) "https")
+      (subseq str 8)
+      (subseq str 7)))
 
-(simkey:define-top-map-key (kbd "SunPrint_Screen") "screenshot")
+(defun youtube? (str)
+  "is this site youtube?"
+  (string= (subseq str 0 11) "www.youtube"))
 
-;;; Define quick and easy mouse commands using Hyper:
+(defun ddg? (str)
+  "is this site duckduckgo?"
+  (string= (subseq str 0 10) "duckduckgo"))
 
-(simkey:define-top-map-key (kbd "M-r") "ratsnap")
-(simkey:define-top-map-key (kbd "H-j") "ratsnap left 75")
-(simkey:define-top-map-key (kbd "H-k") "ratsnap down 75")
-(simkey:define-top-map-key (kbd "H-l") "ratsnap right 75")
-(simkey:define-top-map-key (kbd "H-i") "ratsnap up 75")
-(simkey:define-top-map-key (kbd "H-s-j") "ratsnap left 20")
-(simkey:define-top-map-key (kbd "H-s-k") "ratsnap down 20")
-(simkey:define-top-map-key (kbd "H-s-l") "ratsnap right 20")
-(simkey:define-top-map-key (kbd "H-s-i") "ratsnap up 20")
-(simkey:define-top-map-key (kbd "H-SPC") "ratclick 1")
-(simkey:define-top-map-key (kbd "H-s-SPC") "ratclick 2")
-(simkey:define-top-map-key (kbd "s-SPC") "ratclick 3")
+(defun invidio.us? (str)
+  "is this site invidio.us?"
+  (string= (subseq str 0 10) "invidio.us"))
 
-;; (define-key *top-map* (kbd "s-:") "window-send-string Ø")
-;; (define-key *top-map* (kbd "s-;") "window-send-string \"ø\"")
+(defcommand ff-focus-search-bar () ()
+  (run-commands
+   "meta C-l"
+   "meta C-c")
+  (let ((x-sel (remove-http/s (get-x-selection))))
+    (cond ((youtube? x-sel)
+	   (run-commands
+	    "meta TAB"
+	    "meta TAB"
+	    "meta TAB"
+	    "meta TAB"))
+	  ((or (ddg? x-sel) (invidio.us? x-sel))
+	   (run-commands
+	    "meta TAB"
+	    "meta TAB"
+	    "meta TAB"))
+	  ((invidio.us? x-sel)
+	   (run-commands
+	    "meta TAB"
+	    "meta TAB"
+	    "meta TAB"))
+	  (t
+	   nil))))
 
-;; øØ æÆ åÅ provided by xmodmap
-;;
+(define-remapped-keys
+    `(("Firefox"
+       ("C-g" . "ESC")
 
-;;(load-module "translatin;; g-tests")
-;; (translating-tests:def-trans-keys "Firefox"
-;;     ((kbd "C-n") "meta Down")
-;;   ((kbd "C-p") "meta Up"))
+       ("C-v" . "SunPageDown")
+       ("M-v" . "SunPageUp")
+       ("M-<" . "Home")
+       ("M->" . "End")
+       
+       ("C-n" . "Down")
+       ("C-p" . "Up")
+       ("C-f" . "Right")
+       ("C-b" . "Left")
+       ("M-f" . "C-Right")
+       ("M-b" . "C-Left")
+       ("M-DEL" . "C-DEL")
 
-(simkey:define-key-translation "Firefox"
-  ((kbd "C-g") "meta ESC")
-  
-  ((kbd "C-v") "meta SunPageDown")
-  ((kbd "M-v") "meta SunPageUp")
-  ((kbd "M-<") "meta Home")
-  ((kbd "M->") "meta End")
-  
-  ((kbd "C-p") "meta Up")
-  ((kbd "C-n") "meta Down")
-  ((kbd "C-f") "meta Right")
-  ((kbd "C-b") "meta Left")
-  ((kbd "C-e") "meta End")
-  ((kbd "C-a") "meta Home")
-  
-  ((kbd "C-s") "meta C-g")
-  ((kbd "C-S") "meta C-f")
-  ((kbd "C-r") "meta C-G")
-  ((kbd "M-s") "meta '")
+       ("C-e" . "End")
+       ("C-a" . "Home")
 
-  ((kbd "C-w") "meta C-x")
-  ((kbd "M-w") "meta C-c")
-  ((kbd "C-y") "meta C-v")
+       ("H-s" . "C-f")
+       ("C-s" . "C-g")
+       ("C-r" . "C-G")
+       ("M-s" . "'")
+       ("M-S" . ("C-;" "M-s-H-h"))
+       
+       ("C-w" . "C-x")
+       ("M-w" . "C-c")
+       ("C-y" . "C-v")
 
-  ((kbd "M-f") "meta C-TAB")
-  ((kbd "M-b") "meta C-S-TAB")
-  ((kbd "M-B") "meta C-S-SunPageUp")
-  ((kbd "M-F") "meta C-S-SunPageDown")
+       ("M-F" . "C-TAB")
+       ("M-B" . "C-S-TAB")
+       ("H-b" . "C-S-SunPageUp")
+       ("H-f" . "C-S-SunPageDown")
 
-  ((kbd "C-x") (define-hydra
-  		 ((kbd "k") "meta C-w") ;; close tab
-  		 ((kbd "K") "meta C-S-w") ;; close window
-  		 ((kbd "u") "meta C-T") ;; undo close tab
-  		 ((kbd "C-f") "meta '") ;; search links
-  		 ((kbd "n") "meta C-n") ;; new window
-  		 ((kbd "p") "meta C-P") ;; new private window
-		 ((kbd "a") "meta C-a")
+       ("C-B" . "C-[")
+       ("C-F" . "C-]")
+       
+       ("C-k" . "C-w")
+       ("C-u" . "C-T")
+       ("C-N" . "C-n")
+       ("H-n" . "C-n"))
+      ("Riot"
+       ("C-n" . "Down")
+       ("C-p" . "Up")
+       ("C-f" . "Right")
+       ("C-b" . "Left")
+       ("M-f" . "C-Right")
+       ("M-b" . "C-Left")
+       ("M-DEL" . "C-DEL")
 
-  		 ((kbd "X") "meta F6")
-  		 ((kbd "x") "ff-focus-search-bar")
-  		 ((kbd "+") "meta C-+")
-  		 ((kbd "-") "meta C--")
-  		 ((kbd "0") "meta C-0")
-  		 ((kbd "b") "meta C-[")
-  		 ((kbd "f") "meta C-]"))))
+       ("C-e" . "End")
+       ("C-a" . "Home")
 
-(simkey:define-key-translation "Tor Browser"
-  ((kbd "C-g") "meta ESC")
-  
-  ((kbd "C-v") "meta SunPageDown")
-  ((kbd "M-v") "meta SunPageUp")
-  ((kbd "M-<") "meta Home")
-  ((kbd "M->") "meta End")
-  
-  ((kbd "C-p") "meta Up")
-  ((kbd "C-n") "meta Down")
-  
-  ((kbd "C-s") "meta C-g")
-  ((kbd "C-r") "meta C-G")
-  ((kbd "M-s") "meta '")
+       ("C-w" . "C-x")
+       ("M-w" . "C-c")
+       ("C-y" . "C-v"))
+      ("calibre"
+       ("C-p" . "Up")
+       ("C-n" . "Down"))
+      (,(lambda (win) ;; for the inbox
+	  (search "Mozilla Thunderbird" (window-title win)))
+	("C-n" . "Down")
+	("C-p" . "Up")
+	("C-m" . "C-n") ;; new email
+	("C-k" . "C-w")
+	("C-K" . "C-T")
+	("C-RET" . ("F8" "F6"))
+	("M-o" . "F6")
+	("M-O" . "S-F6")
 
-  ((kbd "C-w") "meta C-x")
-  ((kbd "M-w") "meta C-c")
-  ((kbd "C-y") "meta C-v")
+	("C-w" . "C-x")
+	("M-w" . "C-c")
+	("C-y" . "C-v")
 
-  ((kbd "M-f") "meta C-TAB")
-  ((kbd "M-b") "meta C-S-TAB")
-  ((kbd "M-B") "meta C-S-SunPageUp")
-  ((kbd "M-F") "meta C-S-SunPageDown")
+	("C-s" . "C-g")
+	("C-r" . "C-G")
+	("H-s" . "C-f")
+	("C-g" . "ESC")
 
-  ((kbd "C-x") (define-hydra
-		 ((kbd "k") "meta C-w") ;; close tab
-		 ((kbd "K") "meta C-S-w") ;; close window
-		 ((kbd "u") "meta C-T") ;; undo close tab
-		 ((kbd "C-f") "meta '") ;; search links
-		 ((kbd "n") "meta C-n") ;; new window
-		 ((kbd "p") "meta C-P") ;; new private window
-		 ((kbd "X") "meta F6")
-		 ((kbd "x") "ff-focus-search-bar")
-		 ((kbd "+") "meta C-+")
-		 ((kbd "-") "meta C--")
-		 ((kbd "0") "meta C-0")
+	("M-r" . "C-r")
+	("M-R" . "C-R")
 
-		 ((kbd "b") "meta C-[")
-		 ((kbd "f") "meta C-]"))))
+	("M-<" . "Home")
+	("M->" . "End")
+	
+	("M-F" . "C-TAB")
+	("M-B" . "C-S-TAB")
 
-(simkey:define-key-translation "Riot"
-  ((kbd "C-n") "meta Down")
-  ((kbd "C-p") "meta Up")
-  ((kbd "C-f") "meta Right")
-  ((kbd "C-b") "meta Left")
-  ((kbd "C-a") "meta Home")
-  ((kbd "C-e") "meta End")
-  
-  ((kbd "M-b") "meta C-Left")
-  ((kbd "M-f") "meta C-Right")
-  ((kbd "C-w") "meta C-x")
-  ((kbd "M-y") "meta C-c")
-  ((kbd "C-y") "meta C-v")
+	("C-v" . "SunPageDown")
+	("M-v" . "SunPageUp"))
+      (,(lambda (win) ;; for composing messages
+	  (and (search "Write:" (window-title win))
+	       (search "- Thunderbird" (window-title win))))
+	("C-n" . "Down")
+	("C-p" . "Up")
+	("C-f" . "Right")
+	("C-b" . "Left")
+	("C-a" . "Home")
+	("C-e" . "End")
 
-  ((kbd "C-g") "meta ESC")
-  ((kbd "M-DEL") "meta C-DEL"))
-
-(simkey:define-key-translation "calibre"
-  ((kbd "C-p") "meta Up")
-  ((kbd "C-n") "meta Down"))
+	("C-w" . "C-x")
+	("M-w" . "C-c")
+	("C-y" . "C-v")
+	
+	("C-s" . "C-f")
+	("M-f" . "C-Right")
+	("M-b" . "C-Left")
+	("C-d" . "Delete")
+	("C-g" . "ESC"))
+      ("mpv"
+       ("C-f" . "Right") ;; navigation / skip
+       ("C-b" . "Left")
+       ("M-f" . "Up")
+       ("M-b" . "Down")
+       ("C-p" . "0") ;; volume increase/decrease
+       ("C-n" . "9")
+       )))

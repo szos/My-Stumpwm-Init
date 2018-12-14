@@ -19,8 +19,8 @@ let us call it in the definer macro. "
 
 (defun remap-top-binds ()
   (mapcar #'(lambda (element)
-	      `(,(car element) ,(cdr element)))
-	  *top-binds*))
+	      `(,(car element) ,(cdr element))) ;; inefficient... store these as a plist, not an alist. 
+	  *top-binds*)) ;; use loop. 
 
 (defmacro define-key-translation (class &body kmap)
   "this takes a class and a keymap (same as interactive-keymap) and defines an
