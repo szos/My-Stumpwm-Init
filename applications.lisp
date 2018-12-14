@@ -127,10 +127,10 @@
 (defcommand midnight () ()
   (midnight-commander))
 
-;; (defun midnight-commander ()
-;;   (with-open-window "xterm -e mc" "XTerm"
-;; 		    #'(lambda (cwin)
-;; 			(re-splat-window cwin :new-class "MC"))))
+(defun midnight-commander ()
+  (with-open-window "xterm -e mc" "XTerm"
+		    #'(lambda (cwin)
+			(setf (window-class cwin) "MC"))))
 
 (defcommand file-manager () ()
   "runs your file manager in the current buffer"

@@ -15,7 +15,7 @@
 (run-shell-command "setxkbmap no")
 (run-shell-command "xmodmap ~/.stumpwm.d/modmaps/eng-no.modmap")
 (run-shell-command "/usr/lib/notification-daemon-1.0/notification-daemon")
-;(run-shell-command "/usr/bin/lxqt-policykit-agent")
+;;(run-shell-command "/usr/bin/lxqt-policykit-agent")
 
 (init-load-path "~/.stumpwm.d/custom-modules")
 
