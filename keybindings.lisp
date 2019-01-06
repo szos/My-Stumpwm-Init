@@ -71,6 +71,7 @@
 (define-key *top-map* (kbd "F2") "volume -5")
 (define-key *top-map* (kbd "F3") "volume 5")
 (define-key *top-map* (kbd "F4") "test-msg")
+(undefine-key *top-map* (kbd "F4") )
 (define-key *top-map* (kbd "F5") "test-msg")
 (undefine-key *top-map* (kbd "F6"))
 (define-key *top-map* (kbd "F7") "test-msg")
@@ -182,7 +183,8 @@
        ("C-y" . "C-v"))
       ("calibre"
        ("C-p" . "Up")
-       ("C-n" . "Down"))
+       ("C-n" . "Down")
+       ("C-l" . "C-f"))
       (,(lambda (win) ;; for the inbox
 	  (search "Mozilla Thunderbird" (window-title win)))
 	("C-n" . "Down")
@@ -239,5 +241,4 @@
        ("M-f" . "Up")
        ("M-b" . "Down")
        ("C-p" . "0") ;; volume increase/decrease
-       ("C-n" . "9")
-       )))
+       ("C-n" . "9"))))

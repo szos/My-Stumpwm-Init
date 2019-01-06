@@ -42,7 +42,7 @@ multiple possible parameter searches, with an example call looking like:
   (when (timer-p *jiggle-timer*)
     (cancel-timer *jiggle-timer*))
   (setf *jiggle-timer*
-	(run-with-timer 0 550 #'(lambda ()
+	(run-with-timer 0 100 #'(lambda ()
 				  (ratrelwarp 1 1)
 				  (ratrelwarp -1 -1))))
   (message "Cursor jiggle enabled"))
@@ -55,16 +55,20 @@ multiple possible parameter searches, with an example call looking like:
 ;;; pull a window
 
 (defcommand pullstr-all (str) ((:string "pull: "))
-  (let* ((*window-format* "%n%s%c => %30t")
-	 (win (fuzzy-finder `((:class ,str) (:title ,str) (:role ,str)))))
-    (when (and win (not (equalp win :not-found)))
-      (pull win))))
+  ;; (let* ((*window-format* "%n%s%c => %30t")
+  ;; 	 (win (fuzzy-finder `((:class ,str) (:title ,str) (:role ,str)))))
+  ;;   (when (and win (not (equalp win :not-found)))
+  ;;     (pull win)))
+  (message "pulling ~A" str))
 
 (defcommand pullstr (str) ((:string "pull: "))
   (let* ((*window-format* "%n%s%c => %30t")
 	 (win (fuzzy-finder `((:class ,str)))))
     (when (and win (not (equalp win :not-found)))
       (pull win))))
+
+(defcommand test (strng) (:string "pull: ")
+  (message "echoing \"~A\"" strng))
 
 ;;;
 
