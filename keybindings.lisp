@@ -17,12 +17,33 @@
 (undefine-key *root-map* (kbd "C-S"))
 (undefine-key *root-map* (kbd "S"))
 
-(define-key *root-map* (kbd "s")
+(defcommand smart-split () ()
+  (let* ((frame (current-frame))
+	 (x1 (frame-x frame))
+	 (x2 (frame-r frame))
+	 (y1 (frame-y frame))
+	 (y2 (frame-b frame))
+	 ;; (ratio '((x 540) (y 960)))
+	 )
+    ;; ratio to keep at w/ mode line on is x=540 y=960
+    ;; ratio w/o mode line is: the same... stump doesnt count the mode line when dealing with frames. 
+    (cond ((> (- x2 x1) (- y2 y1))
+	   (hsplit))
+	  ((< (- x2 x1) (- y2 y1))
+	   (vsplit))
+	  (t
+	   (message "square window, i dont know what to do. ")))))
+
+(define-key *root-map* (kbd "C-M-s")
   (define-hydra
     ((kbd "v") "hsplit")
     ((kbd "V") "vsplit-equally")
     ((kbd "h") "vsplit")
     ((kbd "H") "hsplit-equally")))
+
+(define-key *root-map* (kbd "M-s") "vsplit")
+(define-key *root-map* (kbd "C-s") "hsplit")
+(define-key *root-map* (kbd "s") "smart-split")
 
 (define-key *root-map* (kbd "M-b") "move-focus left")
 (define-key *root-map* (kbd "M-f") "move-focus right")
@@ -70,9 +91,9 @@
 (define-key *top-map* (kbd "F1") "volume-set 0")
 (define-key *top-map* (kbd "F2") "volume -5")
 (define-key *top-map* (kbd "F3") "volume 5")
-(define-key *top-map* (kbd "F4") "test-msg")
-(undefine-key *top-map* (kbd "F4") )
-(define-key *top-map* (kbd "F5") "test-msg")
+;;(define-key *top-map* (kbd "F4") "test-msg")
+;;(undefine-key *top-map* (kbd "F4") )
+;;(define-key *top-map* (kbd "F5") "test-msg")
 (undefine-key *top-map* (kbd "F6"))
 (define-key *top-map* (kbd "F7") "test-msg")
 (define-key *top-map* (kbd "F8") "test-msg")

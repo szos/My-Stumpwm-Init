@@ -68,6 +68,7 @@
 (load "~/.stumpwm.d/fuzzy-finder.lisp")
 (load "~/.stumpwm.d/commands.lisp")
 (load "~/.stumpwm.d/applications.lisp")
+(load "~/.stumpwm.d/sibling.lisp")
 
 (brightness-set 50)
 
