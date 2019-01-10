@@ -57,6 +57,9 @@
 
 (define-key *root-map* (kbd "m") "mode-line")
 (define-key *root-map* (kbd "r") "remove")
+(define-key *root-map* (kbd "R") "remove-sibling")
+(define-key *root-map* (kbd "SPC") "change-frames")
+(define-key *root-map* (kbd "O") "sib")
 
 (define-key *root-map* (kbd "C-M-f") "gnext")
 (define-key *root-map* (kbd "C-M-b") "gprev")

@@ -1,90 +1,11 @@
 (in-package :stumpwm)
 
-(defun find-sibling-left (frame-tree sibling-of &optional (cdr-is-nil? t))
-  "this takes the frame tree and a frame to find the sibling of. it returns a sibling
- where sibling can be either a frame, 
-or a list. it should not be nil. this only exists cause the sibling function included
-in stumpwm seems to just go back to the 0th frame... so... the sibling is determined 
-based on where the frame is in the tree. the frame tree is regular, except when theres
-just one frame. eg:
-one   frame '(frame)
-many frames '(((frame (frame frame)) frame))
-or  another '(((frame frame) (frame frame)))
-
-its into a tree like so: (root-frame) is just one frame. then we split that frame,
-so the frame becomes a list, containing frames -> ((frame frame)). so the length 
-of the list will always be 1(one) at the top level, and two at every level below 
-that. 
-
-defun find-sibling-left '(frame-tree sibling-of &optional (cdr-is-nil? t))
-"
-  (when frame-tree
-    (when cdr-is-nil?
-      (setf frame-tree (car frame-tree)))
-    (let ((left-branch-or-leaf (first frame-tree))
-	  (right-branch-or-leaf (second frame-tree))
-	 ;; check-res
-	  )
-      (cond ((listp left-branch-or-leaf)
-	     (find-sibling-left left-branch-or-leaf sibling-of nil))
-	    ((eq left-branch-or-leaf sibling-of)
-	     right-branch-or-leaf) ;; return the sibling
-	    ((eq right-branch-or-leaf sibling-of)
-	     left-branch-or-leaf) ;; return the sibling
-	    ((listp right-branch-or-leaf)
-	     (find-sibling-left right-branch-or-leaf sibling-of nil))
-	    (t
-	     :t-clause))
-      ;; (return-from find-sibling-left check-res)
-      )))
-
-(defun find-sibling-right (frame-tree sibling-of &optional (cdr-is-nil? t))
-  (when frame-tree
-    (when cdr-is-nil?
-      (setf frame-tree (car frame-tree)))
-    (let ((left-branch-or-leaf (first frame-tree))
-	  (right-branch-or-leaf (second frame-tree))
-	 ;; check-res
-	  )
-      (cond ((listp right-branch-or-leaf)
-	     (find-sibling-right right-branch-or-leaf sibling-of nil))
-	    ((eq right-branch-or-leaf sibling-of)
-	     left-branch-or-leaf) ;; return the sibling
-	    ((eq left-branch-or-leaf sibling-of)
-	     right-branch-or-leaf) ;; return the sibling
-	    ((listp left-branch-or-leaf)
-	     (find-sibling-right left-branch-or-leaf sibling-of nil))
-	    (t
-	     :t-clause))
-      ;; (return-from find-sibling-left check-res)
-      )))
-
-(defun find-sibling (frame-tree sibling-of &optional (cdr-is-nil? t))
-  "this takes the frame tree and a frame to find the sibling of. it returns a sibling
- where sibling can be either a frame, 
-or a list. it should not be nil. this only exists cause the sibling function included
-in stumpwm seems to just go back to the 0th frame... so... the sibling is determined 
-based on where the frame is in the tree. the frame tree is regular, except when theres
-just one frame. eg:
-one   frame '(frame)
-many frames '(((frame (frame frame)) frame))
-or  another '(((frame frame) (frame frame)))
-
-its into a tree like so: (root-frame) is just one frame. then we split that frame,
-so the frame becomes a list, containing frames -> ((frame frame)). so the length 
-of the list will always be 1(one) at the top level, and two at every level below 
-that. 
-
-defun find-sibling-left '(frame-tree sibling-of &optional (cdr-is-nil? t))
-"
-  (let ((search-left (find-sibling-left frame-tree sibling-of cdr-is-nil?))
-	(search-right (find-sibling-right frame-tree sibling-of cdr-is-nil?)))
-    (if (eq search-left :t-clause)
-	search-right
-	search-left)))
-
 (defun focus-sib (&optional (group (current-group)) (frame (current-frame)))
-  (let ((sibling (find-sibling (tile-group-frame-tree group) frame)))
+  (let ((sibling (closest-sibling
+	  (list
+	   (tile-group-frame-head group (frame-head group
+						    frame)))
+	  frame)))
     (if (listp sibling)
 	(curframe)
 	(focus-frame group sibling))))
@@ -92,15 +13,37 @@ defun find-sibling-left '(frame-tree sibling-of &optional (cdr-is-nil? t))
 (defcommand sib () ()
   (focus-sib))
 
+(defun remove-split-sibling (tree &optional (group (current-group)))
+  (let ((left (car tree))
+	(right (second tree)))
+    (when (listp left)
+      (remove-split-sibling left group))
+    (when (listp right)
+      (remove-split-sibling right group))
+    (when (frame-p left)
+      (remove-split group left))
+    (when (frame-p right)
+      (remove-split group right))))
 
-(defun remove-sib (&optional (group (current-group)) (frame (current-frame)))
-  (let ((sibling-frame (find-sibling (tile-group-frame-tree group) frame)))
-    (if (listp sibling-frame)
-	(progn (remove-sib group (car sibling-frame))
-	       (focus-frame group (car sibling-frame))
-	       (run-commands "remove")
-	       (curframe))
-	(remove-split (current-group) sibling-frame))))
-
-(defcommand remove-sibling () ()
-  (remove-sib))
+(defcommand (remove-sibling tile-group)
+    (&optional (group (current-group))
+	       (frame (current-frame)))
+    ()
+  "removes the closest sibling frame to the specified frame, which defaults
+to the current frame (requires current-frame function). if the closes sibling
+is split, we go into it and remove every split up through the sibling frame, 
+thus removing every frame in the sibling tree. "
+  (let ((sibling
+	 (closest-sibling
+	  (list
+	   (tile-group-frame-head group (frame-head group
+						    frame)))
+	  frame)))
+    (cond ((listp sibling)
+	   ;; sibling is split
+	   (remove-split-sibling sibling group))
+	  ((frame-p sibling)
+	   ;; sibling is a frame
+	   (remove-split group sibling))
+	  (t
+	   nil))))

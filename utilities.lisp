@@ -135,3 +135,11 @@ the mode line to show the volume "
 (defcommand brightness-increment (val) ((:number "Enter Brightness Increment:  "))
   (let ((*timeout-wait* 1))
     (funcall *brightness* val)))
+
+(define-interactive-keymap change-frames (:on-enter #'fnext
+						    :exit-on ()
+						    ) 
+  ((kbd "O") "fnext")
+  ((kbd "o") "fnext")
+  ((kbd "SPC") "fnext"))
+
