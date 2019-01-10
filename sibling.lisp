@@ -46,4 +46,4 @@ thus removing every frame in the sibling tree. "
 	   ;; sibling is a frame
 	   (remove-split group sibling))
 	  (t
-	   nil))))
+	   (curframe)))))

@@ -29,3 +29,7 @@ Contains commands, as well as a shitty cond-let, which isnt really a cond-let, m
 ## applications.lisp ##
 
 Contains bindings for applications, sorted by category.
+
+## sibling.lisp ##
+
+Contains the commands sib and remove-sibling (and their plumbing). These commands operate on the closest sibling, and is designed to get around shortcomings in the sibling command. 
