@@ -137,9 +137,6 @@ the mode line to show the volume "
     (funcall *brightness* val)))
 
 (define-interactive-keymap change-frames (:on-enter #'fnext
-						    :exit-on ()
-						    ) 
-  ((kbd "O") "fnext")
-  ((kbd "o") "fnext")
+						    :exit-on ((kbd "RET") (kbd "ESC")
+							      (kbd "C-g")))
   ((kbd "SPC") "fnext"))
-

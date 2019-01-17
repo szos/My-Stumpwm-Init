@@ -5,16 +5,16 @@
      (cond ,@cond-body)))
 
 (defun current-frame ()
-  (window-frame (current-window)))
+  (let ((window-type (type-of (current-window))))
+    (if (eq window-type 'float-window)
+	nil ;; (focus-all (current-window))
+	(window-frame (current-window)))))
 
-(defcommand sib () ()
-  (actually-switch-to-sibling))
-
-(defun actually-switch-to-sibling ()
-  (let ((sib (switch-to-sibling)))
-    (if (listp sib)
-	(curframe)
-	(focus-frame (current-group) sib))))
+;; (defun actually-switch-to-sibling ()
+;;   (let ((sib (grab-sibling)))
+;;     (if (listp sib)
+;; 	(curframe)
+;; 	(focus-frame (current-group) sib))))
 
 ;; (((#S(frame 0 #S(TILE-WINDOW "Futurama S02E11 The Lesser Of Two Evils - VLC media player" #x3000006) 0 0 960 540)
 ;;    #S(frame 2 #S(TILE-WINDOW "Debugging Lisp Part 2: Inspecting – malisper.me - Mozilla Firefox" #x1A00A2C) 0 540 960 540))
@@ -32,120 +32,120 @@
 ;; is like:
 ;; ((frame frame))
 
-(defun switch-to-sibling (&optional (frame-tree (tile-group-frame-tree (current-group)))
-			    (frame-to-match (current-frame)))
-  "takes a frame-tree and a frame to find the sibling of. it returns the sibling, or a 
-list of the sibling frames, if the sibling is divided by splits."
-  (when frame-tree
-    (let ((left (first frame-tree))
-	  (right (second frame-tree))
-	  (result nil))
-      ;; (break)
-      ;; were taking in a list, which has two items. think bst. (frame-or-list frame-or-list)
-      ;; so we have to examine left and right sides to find our frame.
-      (when (frame-p left)
-	(print "checking left")
-	(when (eq frame-to-match left)
-	  (print "it was left")
-	  (return-from switch-to-sibling right))) ;; return a list containing the match, then the sibling.
-      (when (frame-p right)
-	(print "checking right")
-	(when (eq frame-to-match right)
-	  (print "it was right, returning up a level")
-	  (return-from switch-to-sibling left))) ;; return the sibling. 
-      (when (listp left)
-	(print "entering next level, on the left")
-	(setf result (switch-to-sibling left frame-to-match))
+;; (defun grab-sibling (&optional (frame-tree (tile-group-frame-tree (current-group)))
+;; 			    (frame-to-match (current-frame)))
+;;   "takes a frame-tree and a frame to find the sibling of. it returns the sibling, or a 
+;; list of the sibling frames, if the sibling is divided by splits."
+;;   (when frame-tree
+;;     (let ((left (first frame-tree))
+;; 	  (right (second frame-tree))
+;; 	  (result nil))
+;;       ;; (break)
+;;       ;; were taking in a list, which has two items. think bst. (frame-or-list frame-or-list)
+;;       ;; so we have to examine left and right sides to find our frame.
+;;       (when (frame-p left)
+;; 	(print "checking left")
+;; 	(when (eq frame-to-match left)
+;; 	  (print "it was left")
+;; 	  (return-from grab-sibling right))) ;; return a list containing the match, then the sibling.
+;;       (when (frame-p right)
+;; 	(print "checking right")
+;; 	(when (eq frame-to-match right)
+;; 	  (print "it was right, returning up a level")
+;; 	  (return-from grab-sibling left))) ;; return the sibling. 
+;;       (when (listp left)
+;; 	(print "entering next level, on the left")
+;; 	(setf result (switch-to-sibling left frame-to-match))
 	
-	(let ((ret (switch-to-sibling left frame-to-match)))
-	  (if (eq frame-to-match ret)
-	      (return-from switch-to-sibling ret)
-	      :noip))
-	;;(switch-to-sibling left frame-to-match)
-	)
-      (when (listp right)
-	(print "entering next level, on the right")
-	(return-from switch-to-sibling (switch-to-sibling right frame-to-match))
-	;;(switch-to-sibling right frame-to-match)
-	))))
+;; 	(let ((ret (switch-to-sibling left frame-to-match)))
+;; 	  (if (eq frame-to-match ret)
+;; 	      (return-from grab-sibling ret)
+;; 	      :noip))
+;; 	;;(switch-to-sibling left frame-to-match)
+;; 	)
+;;       (when (listp right)
+;; 	(print "entering next level, on the right")
+;; 	(return-from grab-sibling (grab-sibling right frame-to-match))
+;; 	;;(switch-to-sibling right frame-to-match)
+;; 	))))
 
-(defun to-sibling (&optional (frame-tree (tile-group-frame-tree (current-group)))
-		     (frame-to-match (current-frame)))
-  "takes a frame-tree and a frame to find the sibling of. it returns the sibling, or a 
-list of the sibling frames, if the sibling is divided by splits."
-  (when frame-tree
-    (let ((left (first frame-tree))
-	  (right (second frame-tree)))
-      ;; (break)
-      ;; were taking in a list, which has two items. think bst. (frame-or-list frame-or-list)
-      ;; so we have to examine left and right sides to find our frame.
-      (cond ((frame-p left)
-	     (when (eq frame-to-match left)
-	       (if right
-		   right
-		   :right-is-nil)))
-	    ((frame-p right)
-	     (when (eq frame-to-match right)
-	       (if left
-		   left
-		   :left-is-nil)))
-	    ((listp left)
-	     (to-sibling left frame-to-match))
-	    ((listp right)
-	     (to-sibling right frame-to-match))
-	    (t
-	     frame-to-match)))))
+;; (defun to-sibling (&optional (frame-tree (tile-group-frame-tree (current-group)))
+;; 		     (frame-to-match (current-frame)))
+;;   "takes a frame-tree and a frame to find the sibling of. it returns the sibling, or a 
+;; list of the sibling frames, if the sibling is divided by splits."
+;;   (when frame-tree
+;;     (let ((left (first frame-tree))
+;; 	  (right (second frame-tree)))
+;;       ;; (break)
+;;       ;; were taking in a list, which has two items. think bst. (frame-or-list frame-or-list)
+;;       ;; so we have to examine left and right sides to find our frame.
+;;       (cond ((frame-p left)
+;; 	     (when (eq frame-to-match left)
+;; 	       (if right
+;; 		   right
+;; 		   :right-is-nil)))
+;; 	    ((frame-p right)
+;; 	     (when (eq frame-to-match right)
+;; 	       (if left
+;; 		   left
+;; 		   :left-is-nil)))
+;; 	    ((listp left)
+;; 	     (to-sibling left frame-to-match))
+;; 	    ((listp right)
+;; 	     (to-sibling right frame-to-match))
+;; 	    (t
+;; 	     frame-to-match)))))
 
-(defun map-on-frame-tree (frame-tree frame-to-match)
-  "frame-tree is a list of frames. its organized with two items per level in the list,
-and those items can be a frame, or another level(list) holding two more items. everything
-descends from one frame, which gets split.  eg:
-one frame is:      (#S(frame))
-split vertical is: ((#S(frame) #S(frame))) - this is the top frame, split into two frames. 
-this is represented by the list of frames. 
+;; (defun map-on-frame-tree (frame-tree frame-to-match)
+;;   "frame-tree is a list of frames. its organized with two items per level in the list,
+;; and those items can be a frame, or another level(list) holding two more items. everything
+;; descends from one frame, which gets split.  eg:
+;; one frame is:      (#S(frame))
+;; split vertical is: ((#S(frame) #S(frame))) - this is the top frame, split into two frames. 
+;; this is represented by the list of frames. 
 
 
-;((#S(frame) #S(frame))) top frame divided in two. 
-;((#S(frame) (#S(frame) #S(frame)))) top frame divided in two, one of those frames divided in two.
-"
-  (when frame-tree
-    (let ((left (first frame-tree))
-	  (right (second frame-tree))
-	  (examine-left nil)
-	  (examine-right nil))
-      ;; were taking in a list, which has two items. think bst. (frame-or-list frame-or-list)
-      ;; so we have to examine left and right sides to find our frame.
-      (when (frame-p left)
-	(when (eq frame-to-match left)
-	  (return-from map-on-frame-tree left)))
-      (when (frame-p right)
-	(when (eq frame-to-match right)
-	  (return-from map-on-frame-tree right)))
-      (when (listp left)
-	(setf examine-left (map-on-frame-tree left frame-to-match))
-	(if (eq frame-to-match examine-left)
-	    (return-from map-on-frame-tree examine-left)))
-      (when (listp right)
-	(setf examine-right (map-on-frame-tree right frame-to-match))
-	(if (eq frame-to-match examine-right)
-	    (return-from map-on-frame-tree examine-right)))
-      ;; (cond ((frame-p left)
-      ;; 	     (when (eq frame-to-match left)
-      ;; 	       right))
-      ;; 	    ((frame-p right)
-      ;; 	     (when (eq frame-to-match right)
-      ;; 	       left))
-      ;; 	    ((listp left)
-      ;; 	     (let ((ret (map-on-frame-tree left frame-to-match)))
-      ;; 	       (if (eq frame-to-match ret)
-      ;; 		   ret)))
-      ;; 	    ((listp right)
-      ;; 	     (let ((ret (map-on-frame-tree right frame-to-match)))
-      ;; 	       (if (eq frame-to-match ret)
-      ;; 		   ret)))
-      ;; 	    (t
-      ;; 	     nil))
-      )))
+;; ;((#S(frame) #S(frame))) top frame divided in two. 
+;; ;((#S(frame) (#S(frame) #S(frame)))) top frame divided in two, one of those frames divided in two.
+;; "
+;;   (when frame-tree
+;;     (let ((left (first frame-tree))
+;; 	  (right (second frame-tree))
+;; 	  (examine-left nil)
+;; 	  (examine-right nil))
+;;       ;; were taking in a list, which has two items. think bst. (frame-or-list frame-or-list)
+;;       ;; so we have to examine left and right sides to find our frame.
+;;       (when (frame-p left)
+;; 	(when (eq frame-to-match left)
+;; 	  (return-from map-on-frame-tree left)))
+;;       (when (frame-p right)
+;; 	(when (eq frame-to-match right)
+;; 	  (return-from map-on-frame-tree right)))
+;;       (when (listp left)
+;; 	(setf examine-left (map-on-frame-tree left frame-to-match))
+;; 	(if (eq frame-to-match examine-left)
+;; 	    (return-from map-on-frame-tree examine-left)))
+;;       (when (listp right)
+;; 	(setf examine-right (map-on-frame-tree right frame-to-match))
+;; 	(if (eq frame-to-match examine-right)
+;; 	    (return-from map-on-frame-tree examine-right)))
+;;       ;; (cond ((frame-p left)
+;;       ;; 	     (when (eq frame-to-match left)
+;;       ;; 	       right))
+;;       ;; 	    ((frame-p right)
+;;       ;; 	     (when (eq frame-to-match right)
+;;       ;; 	       left))
+;;       ;; 	    ((listp left)
+;;       ;; 	     (let ((ret (map-on-frame-tree left frame-to-match)))
+;;       ;; 	       (if (eq frame-to-match ret)
+;;       ;; 		   ret)))
+;;       ;; 	    ((listp right)
+;;       ;; 	     (let ((ret (map-on-frame-tree right frame-to-match)))
+;;       ;; 	       (if (eq frame-to-match ret)
+;;       ;; 		   ret)))
+;;       ;; 	    (t
+;;       ;; 	     nil))
+;;       )))
 
 (defun run-raise-or-pull (cmd props)
   "This function grabs a window based on props (and automatically list if there
@@ -157,6 +157,9 @@ multiple possible parameter searches, with an example call looking like:
 \(run-raise-or-pull \"command\" '\(:class \"cc\" \)\)  OR
 \(run-raise-or-pull \"command\" '\(\(:title \"title\"\)
                                    \(:class \"CC\"\)\) "
+
+  ;; wealth advice center. ask about migration.
+  ;; direct line is: 503 226 1830
   (cond-let ((win (fuzzy-finder (if (listp (car props))
 				    props
 				    `(,props)))))

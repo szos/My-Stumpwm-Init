@@ -70,13 +70,11 @@
 (define-key *root-map* (kbd ";") "colon")
 (define-key *root-map* (kbd "w") "windowlist")
 
-;;; this is for define-remapped-keys; it allows us to call functions.
 (define-key *root-map* (kbd "M-s-H-h") "ff-focus-search-bar") 
 
 (define-key *top-map* (kbd "M-F1") "volume-set 0")
 (define-key *top-map* (kbd "M-F2") "volume -5")
 (define-key *top-map* (kbd "M-F3") "volume 5")
-
 
 (define-key *top-map* (kbd "XF86AudioLowerVolume") "volume -5")
 (define-key *top-map* (kbd "XF86AudioRaiseVolume") "volume 5")
@@ -102,8 +100,8 @@
 (define-key *top-map* (kbd "F7") "test-msg")
 (define-key *top-map* (kbd "F8") "test-msg")
 (define-key *top-map* (kbd "F9") "test-msg")
-(undefine-key *top-map* (kbd "F10"); "test-msg"
-	      )
+;; (undefine-key *top-map* (kbd "F10"); "test-msg"
+;; 	      )
 (define-key *top-map* (kbd "F11") "brightness-increment -5")
 (define-key *top-map* (kbd "F12") "brightness-increment 5")
 

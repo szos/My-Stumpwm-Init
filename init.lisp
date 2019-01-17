@@ -14,7 +14,7 @@
 
 (run-shell-command "setxkbmap no")
 (run-shell-command "xmodmap ~/.stumpwm.d/modmaps/eng-no.modmap")
-;;(run-shell-command "xmodmap ~/.stumpwm.d/modmaps/eng-altgrn.modmap")
+;; (run-shell-command "xmodmap ~/.stumpwm.d/modmaps/eng-altgrn.modmap")
 (run-shell-command "/usr/lib/notification-daemon-1.0/notification-daemon")
 (run-shell-command "/usr/bin/lxqt-policykit-agent")
 
@@ -62,8 +62,8 @@
   ;; (run-shell-command "./pia.sh")
   (run-shell-command "blueman-applet"))
 
-(load "~/.stumpwm.d/keybindings.lisp")
 (load "~/.stumpwm.d/utilities.lisp")
+(load "~/.stumpwm.d/keybindings.lisp")
 (load "~/.stumpwm.d/with-open-window.lisp")
 (load "~/.stumpwm.d/fuzzy-finder.lisp")
 (load "~/.stumpwm.d/commands.lisp")

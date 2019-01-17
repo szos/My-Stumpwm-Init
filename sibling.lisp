@@ -1,6 +1,6 @@
 (in-package :stumpwm)
 
-(defun focus-sib (&optional (group (current-group)) (frame (current-frame)))
+(defcommand sib (&optional (group (current-group)) (frame (current-frame))) ()
   (let ((sibling (closest-sibling
 	  (list
 	   (tile-group-frame-head group (frame-head group
@@ -9,9 +9,6 @@
     (if (listp sibling)
 	(curframe)
 	(focus-frame group sibling))))
-
-(defcommand sib () ()
-  (focus-sib))
 
 (defun remove-split-sibling (tree &optional (group (current-group)))
   (let ((left (car tree))
