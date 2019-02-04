@@ -50,6 +50,11 @@
 (define-key *root-map* (kbd "M-n") "move-focus down")
 (define-key *root-map* (kbd "M-p") "move-focus up")
 
+(define-key *root-map* (kbd "s-p") "exchange-direction up")
+(define-key *root-map* (kbd "s-n") "exchange-direction down")
+(define-key *root-map* (kbd "s-b") "exchange-direction left")
+(define-key *root-map* (kbd "s-f") "exchange-direction right")
+
 (define-key *root-map* (kbd "C-f") "move-focus right")
 (define-key *root-map* (kbd "C-b") "move-focus left")
 (define-key *root-map* (kbd "C-n") "pull-hidden-next")
@@ -105,6 +110,8 @@
 (define-key *top-map* (kbd "F11") "brightness-increment -5")
 (define-key *top-map* (kbd "F12") "brightness-increment 5")
 
+(undefine-key *root-map* (kbd "c"))
+
 (defun remove-http/s (str)
   "takes a url, and returns the url without the http/s://"
   (if (string= (subseq str 0 5) "https")
@@ -146,6 +153,27 @@
 	    "meta TAB"))
 	  (t
 	   nil))))
+
+(defun url-p (url)
+  (when (> (length url) 6)
+    (or (string= (subseq url 0 7) "http://")
+	    (string= (subseq url 0 8) "https://"))))
+
+(defcommand watch-video () ()
+  "use this command when on youtube, or another site that mpv can play from, 
+and it will open the video in mpv."
+  (let* ((curwin (current-window))
+	 (url (progn (run-commands "meta C-c")
+		     (get-x-selection))))
+    (when (string= (window-class curwin) "Firefox")
+      
+      (unless (url-p url)
+	(run-commands "meta F6"
+		      "meta C-c")
+	(setf url (get-x-selection)))
+      (message "Opening video:  ~S" url)
+      ;; (message "win: ~A.   url: ~A" curwin (get-x-selection))
+      (run-shell-command (format nil "mpv ~A" url)))))
 
 (define-remapped-keys
     `(("Firefox"

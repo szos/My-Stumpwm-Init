@@ -160,23 +160,24 @@ multiple possible parameter searches, with an example call looking like:
 
   ;; wealth advice center. ask about migration.
   ;; direct line is: 503 226 1830
-  (cond-let ((win (fuzzy-finder (if (listp (car props))
+  (let ((win (fuzzy-finder (if (listp (car props))
 				    props
 				    `(,props)))))
-    ((not win) ;; this means that fuzzy finder was quit by the user. 
-     (let ((opt (second (select-from-menu (current-screen) `(("RUN" ,cmd)
-     							     ("EXIT" nil))))))
-       (if (stringp opt)
-     	   (run-shell-command opt)
-     	   (eval opt))))
-    ((equalp win :not-found)
-     (if (stringp cmd)
-     	 (run-shell-command cmd)
-     	 (eval cmd)))
-    ((or (window-visible-p win) (not (eq (window-group win) (current-group))))
-     (raise win))
-    (t
-     (pull win))))
+    (cond
+      ((not win) ;; this means that fuzzy finder was quit by the user. 
+       (let ((opt (second (select-from-menu (current-screen) `(("RUN" ,cmd)
+     							       ("EXIT" nil))))))
+	 (if (stringp opt)
+     	     (run-shell-command opt)
+     	     (eval opt))))
+      ((equalp win :not-found)
+       (if (stringp cmd)
+     	   (run-shell-command cmd)
+     	   (eval cmd)))
+      ((or (window-visible-p win) (not (eq (window-group win) (current-group))))
+       (raise win))
+      (t
+       (pull win)))))
 
 ;;; keep screen from sleeping
 
@@ -213,14 +214,12 @@ multiple possible parameter searches, with an example call looking like:
     (when (and win (not (equalp win :not-found)))
       (pull win))))
 
-(defcommand test (strng) (:string "pull: ")
+(defcommand test{echo} (strng) (:string "pull: ")
   (message "echoing ~S" strng))
 
 (defcommand pull-from-global () ()
   (let ((*window-format* "%n%s%c => %30t"))
     ()))
-
-
 
 ;;;
 
