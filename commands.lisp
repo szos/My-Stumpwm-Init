@@ -174,7 +174,11 @@ multiple possible parameter searches, with an example call looking like:
        (if (stringp cmd)
      	   (run-shell-command cmd)
      	   (eval cmd)))
-      ((or (window-visible-p win) (not (eq (window-group win) (current-group))))
+      ;; ((or (window-visible-p win) (not (eq (window-group win) (current-group))))
+      ;;  (raise win)) ;; this raises the window when it shouldnt. 
+      ((window-visible-p win)
+       (raise win))
+      ((not (eq (window-group win) (current-group)))
        (raise win))
       (t
        (pull win)))))
@@ -198,6 +202,12 @@ multiple possible parameter searches, with an example call looking like:
   (when (timer-p *jiggle-timer*)
     (cancel-timer *jiggle-timer*)
     (message "Cursor jiggle disabled")))
+
+;;; copy paste commands
+(defcommand sendx () ()
+  (window-send-string (get-x-selection)))
+(defcommand send-string (str) ((:string "string to send: "))
+  (window-send-string str))
 
 ;;; pull a window
 

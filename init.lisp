@@ -42,7 +42,7 @@
 (set-bg-color "#cc3399")
 
 (setf *screen-mode-line-format*
-      (list "^6^B%B^b | %c%t %f |%l| %M | "
+      (list "^6^B%B^b | %c%t %f | %l| %M | "
 	     "%d
 "
 	     "%h | %g | %W"))

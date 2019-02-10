@@ -22,8 +22,80 @@
 
 ;;; closures for system functionality
 
-(defmacro format-shell-command (&body format-stuff)
-  `(run-shell-command (format nil ,@format-stuff)))
+(defmacro format-shell-command (control-string &body format-stuff
+			)
+  `(run-shell-command (format nil ,control-string ,@format-stuff)))
+
+(defun replace-newlines-in (string &key (with #\SPACE))
+  (loop for character across string
+     unless (char= character #\NEWLINE) collect character into list
+     when (char= character #\NEWLINE) collect with into list
+     finally (return (coerce list 'string))))
+
+(defun format-volume-readout (string)
+  (loop with left = '(#\L #\e #\f #\t #\: #\SPACE #\SPACE)
+     with right = '(#\R #\i #\g #\h #\t #\: #\SPACE)
+     with switch? = nil
+     for char across string
+     do (if (char= char #\NEWLINE)
+	    (progn (setf switch? t)
+		   (setf left (append left (list #\SPACE))))
+	    (if switch?
+		(setf right (append right (list char))) ;; right channel
+		(setf left (append left (list char))) ;; left channel
+		))
+     finally (return (coerce (concatenate 'list '(#\V #\o #\l #\u #\m #\e #\: #\SPACE #\SPACE)
+					  left '(#\NEWLINE) '(#\SPACE #\SPACE #\SPACE #\SPACE #\SPACE #\SPACE #\SPACE #\SPACE #\SPACE)
+					  right)
+			     'string))))
+
+(defun message-volume (&optional )
+  (message
+   (format-volume-readout
+    (run-shell-command
+     "amixer get Master | egrep -o \"[0-9]+%\" | egrep \"[0-9]*\"" t))))
+
+(defun get-volume ()
+  (let* ((amixer-report
+	  (run-shell-command
+	   "amixer get Master | egrep -o \"[0-9]+%\" | egrep \"[0-9]*\"" t))
+	 (location
+	  (mismatch amixer-report
+		    (replace-newlines-in amixer-report :with #\_))))
+    (parse-integer (subseq amixer-report 0 (- location 1)))))
+
+(defun set-volume (percentage)
+  (let* ((cmd-string
+	  (format nil
+		  "amixer sset Master ~A% | egrep -o \"[0-9]+%\" | egrep \"[0-9]*\"" percentage))
+	 (result (run-shell-command cmd-string t))
+	 )
+    (message (format-volume-readout result))))
+
+(defun vol-closure ()
+  (let ((volume-level (get-volume)))
+    (lambda (amnt &optional (set nil))
+      "add amnt to volume level, and use amixer to set to the new volume"
+      (if set
+	  (progn (setf volume-level amnt)
+		 (set-volume amnt))
+	  (let ((newlevel (+ volume-level amnt)))
+	    (setf volume-level newlevel)
+	    (set-volume newlevel))))))
+
+(defparameter *volume-param* (vol-closure))
+
+(defun inc-volume (amnt)
+  (let ((*timeout-wait* 2))
+    (funcall *volume-param* amnt)))
+(defun force-volume (amnt)
+  (let ((*timeout-wait* 2))
+    (funcall *volume-param* amnt t)))
+
+(defcommand change-volume-by (amnt) ((:number "Level to change volume by: "))
+  (inc-volume amnt))
+
+;;; volume closures
 
 (defparameter *volume-percentage* "")
 

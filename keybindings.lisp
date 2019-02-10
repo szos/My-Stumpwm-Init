@@ -1,17 +1,78 @@
 (in-package :stumpwm)
 
-(defmacro define-hydra (&body bindings)
+(define-condition in-as-error (error)
+  ((both :accessor :in-and-as
+	 :initarg :both
+	 :initform nil
+	 :documentation "Indicates that both IN and AS were used in a for statement.")
+   (neither :accessor :in-nor-as
+	    :initarg :neither
+	    :initform nil
+	    :documentation "Indicates that neither IN nor AS were used in a for statement. ")
+   (for-statement :accessor :for-statement
+		  :initarg :statement-information
+		  :initform nil
+		  :documentation "The for statement, as it was sent in, for use in restarts. ")))
+
+
+
+;; (for (x :in '(0 1 2 3 4 5) :accum-in (acc 0))
+;;   (print x)
+;;   (setf acc (+ acc x)))
+
+;; (for ('(1 2 3 4 5) :as x :accum-in (acc 0))
+;;   (print x)
+;;   (setf acc (+ x acc)))
+
+
+(defmacro for ((thing &key (in nil) (accum-in (gensym))
+			(as nil))
+	       &body body)
+  "this macro creates a for loop, as in c or python or what have you. "
+  (cond ((and as (not in))
+	 `(let (,accum-in)
+	    (mapcar #'(lambda (,as)
+			,@body)
+		    ,thing)
+	    ,(if (listp accum-in)
+		 (car accum-in)
+		 accum-in)))
+	((and in (not as))
+	 `(let (,accum-in)
+	    (mapcar #'(lambda (,thing)
+			,@body)
+		    ,in)
+	    ,(if (listp accum-in)
+		 (car accum-in)
+		 accum-in)))
+	((and in as)
+	 `(let (,accum-in
+		,as)
+	    (mapcar #'(lambda (,thing)
+			(setf ,as ,thing)
+			,@body)
+		    ,in)))
+	(t
+	 `(with-simple-restart (provide-in "proveide a :in variable" x-variable)
+	    
+	    (error 'in-as-error
+		   :neither t :statement-information '(for (,thing ,(when accum-in
+								      accum-in))
+						       ,@body))))))
+
+(defmacro define-keymap (&body bindings)
+  "takes a list of bindings, in the form ((kbd \"key\") \"command\")
+and creates a keymap with them, returning said keymap. "
   (let* ((m (gensym))
 	 (bind-to-m (mapcar #'(lambda (bind)
-				(push m bind)
-				(push 'define-key bind))
+				`(define-key ,m ,@bind))
 			    bindings)))
     `(let ((,m (make-sparse-keymap)))
        ,@bind-to-m
        ,m)))
 
 (defparameter *test-hydra*
-  (define-hydra
+  (define-keymap
     ((kbd "n") "meta C-n")))
 
 (undefine-key *root-map* (kbd "C-S"))
@@ -35,7 +96,7 @@
 	   (message "square window, i dont know what to do. ")))))
 
 (define-key *root-map* (kbd "C-M-s")
-  (define-hydra
+  (define-keymap
     ((kbd "v") "hsplit")
     ((kbd "V") "vsplit-equally")
     ((kbd "h") "vsplit")
@@ -44,6 +105,13 @@
 (define-key *root-map* (kbd "M-s") "vsplit")
 (define-key *root-map* (kbd "C-s") "hsplit")
 (define-key *root-map* (kbd "s") "smart-split")
+
+(defcommand mesage (str) ((:string "message: "))
+  (message str))
+
+;; (define-key *root-map* (kbd "C-z
+;; C-f") "mesage hi")
+;; this doesnt work...
 
 (define-key *root-map* (kbd "M-b") "move-focus left")
 (define-key *root-map* (kbd "M-f") "move-focus right")
@@ -78,8 +146,8 @@
 (define-key *root-map* (kbd "M-s-H-h") "ff-focus-search-bar") 
 
 (define-key *top-map* (kbd "M-F1") "volume-set 0")
-(define-key *top-map* (kbd "M-F2") "volume -5")
-(define-key *top-map* (kbd "M-F3") "volume 5")
+(define-key *top-map* (kbd "M-F2") "change-volume-by -5")
+(define-key *top-map* (kbd "M-F3") "change-volume-by 5")
 
 (define-key *top-map* (kbd "XF86AudioLowerVolume") "volume -5")
 (define-key *top-map* (kbd "XF86AudioRaiseVolume") "volume 5")
@@ -97,7 +165,9 @@
 
 (define-key *top-map* (kbd "F1") "volume-set 0")
 (define-key *top-map* (kbd "F2") "volume -5")
+(define-key *top-map* (kbd "C-F2") "volume-set 50")
 (define-key *top-map* (kbd "F3") "volume 5")
+(define-key *top-map* (kbd "C-F3") "volume-set 100")
 ;;(define-key *top-map* (kbd "F4") "test-msg")
 ;;(undefine-key *top-map* (kbd "F4") )
 ;;(define-key *top-map* (kbd "F5") "test-msg")
@@ -166,7 +236,6 @@ and it will open the video in mpv."
 	 (url (progn (run-commands "meta C-c")
 		     (get-x-selection))))
     (when (string= (window-class curwin) "Firefox")
-      
       (unless (url-p url)
 	(run-commands "meta F6"
 		      "meta C-c")
@@ -216,7 +285,10 @@ and it will open the video in mpv."
        ("C-k" . "C-w")
        ("C-u" . "C-T")
        ("C-N" . "C-n")
-       ("H-n" . "C-n"))
+       ("H-n" . "C-n")
+       ;; ("C-x" . ,(define-keymap
+       ;; 		     ((kbd "u") "meta C-z")))
+       )
       ("Riot"
        ("C-n" . "Down")
        ("C-p" . "Up")
@@ -225,6 +297,27 @@ and it will open the video in mpv."
        ("M-f" . "C-Right")
        ("M-b" . "C-Left")
        ("M-DEL" . "C-DEL")
+       ("C-d" . "Delete")
+       ("M-d" . "C-Delete")
+       ("C-k" . ("S-End" "Delete"))
+
+       ("C-e" . "End")
+       ("C-a" . "Home")
+
+       ("C-w" . "C-x")
+       ("M-w" . "C-c")
+       ("C-y" . "C-v"))
+      ("Signal"
+       ("C-n" . "Down")
+       ("C-p" . "Up")
+       ("C-f" . "Right")
+       ("C-b" . "Left")
+       ("M-f" . "C-Right")
+       ("M-b" . "C-Left")
+       ("M-DEL" . "C-DEL")
+       ("C-d" . "Delete")
+       ("M-d" . "C-Delete")
+       ("C-k" . ("S-End" "Delete"))
 
        ("C-e" . "End")
        ("C-a" . "Home")
