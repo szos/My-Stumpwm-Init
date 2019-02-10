@@ -94,6 +94,8 @@
 
 (defcommand change-volume-by (amnt) ((:number "Level to change volume by: "))
   (inc-volume amnt))
+(defcommand re-set-volume (&optional amnt) ((:number "set volume to: "))
+  (force-volume amnt))
 
 ;;; volume closures
 

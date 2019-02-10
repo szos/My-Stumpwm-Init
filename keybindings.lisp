@@ -145,10 +145,6 @@ and creates a keymap with them, returning said keymap. "
 
 (define-key *root-map* (kbd "M-s-H-h") "ff-focus-search-bar") 
 
-(define-key *top-map* (kbd "M-F1") "volume-set 0")
-(define-key *top-map* (kbd "M-F2") "change-volume-by -5")
-(define-key *top-map* (kbd "M-F3") "change-volume-by 5")
-
 (define-key *top-map* (kbd "XF86AudioLowerVolume") "volume -5")
 (define-key *top-map* (kbd "XF86AudioRaiseVolume") "volume 5")
 (define-key *top-map* (kbd "XF86AudioMute") "volume-set 0")
@@ -163,18 +159,30 @@ and creates a keymap with them, returning said keymap. "
 (defcommand test-msg () ()
   (message "registered function key"))
 
-(define-key *top-map* (kbd "F1") "volume-set 0")
-(define-key *top-map* (kbd "F2") "volume -5")
-(define-key *top-map* (kbd "C-F2") "volume-set 50")
-(define-key *top-map* (kbd "F3") "volume 5")
-(define-key *top-map* (kbd "C-F3") "volume-set 100")
+(define-key *top-map* (kbd "M-F1") "re-set-volume 0")
+(define-key *top-map* (kbd "M-F2") "change-volume-by -5")
+(define-key *top-map* (kbd "M-F3") "change-volume-by 5")
+
+(define-key *top-map* (kbd "F1") "re-set-volume 0")
+(define-key *top-map* (kbd "F2") "change-volume-by -5")
+(define-key *top-map* (kbd "F3") "change-volume-by 5")
+
+;; (undefine-key *top-map* (kbd "F3"))
+
+(define-key *top-map* (kbd "C-F2") "re-set-volume 50")
+(define-key *top-map* (kbd "C-F3") "re-set-volume 100")
+;; (define-key *top-map* (kbd "C-F1") "mute")
+
+;; (define-key *top-map* (kbd "F1") "volume-set 0")
+;; (define-key *top-map* (kbd "F2") "volume -5")
+;; (define-key *top-map* (kbd "F3") "volume 5")
 ;;(define-key *top-map* (kbd "F4") "test-msg")
 ;;(undefine-key *top-map* (kbd "F4") )
 ;;(define-key *top-map* (kbd "F5") "test-msg")
 (undefine-key *top-map* (kbd "F6"))
-(define-key *top-map* (kbd "F7") "test-msg")
-(define-key *top-map* (kbd "F8") "test-msg")
-(define-key *top-map* (kbd "F9") "test-msg")
+;;(define-key *top-map* (kbd "F7") "test-msg")
+;;(define-key *top-map* (kbd "F8") "test-msg")
+;;(define-key *top-map* (kbd "F9") "test-msg")
 ;; (undefine-key *top-map* (kbd "F10"); "test-msg"
 ;; 	      )
 (define-key *top-map* (kbd "F11") "brightness-increment -5")
