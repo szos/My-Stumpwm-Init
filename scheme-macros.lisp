@@ -1,14 +1,14 @@
-;mbe.lsp
-;Dorai Sitaram
-;April 16, 1998
-;v. 0a
+;;mbe.lsp - now called scheme-macros.lisp, and integrated into stumpwm.
+;;Dorai Sitaram
+;;April 16, 1998
+;;v. 0a
 
-;Implementation of R5RS-style define-syntax, let-syntax and
-;letrec-syntax for Common Lisp.
+;;Implementation of R5RS-style define-syntax, let-syntax and
+;;letrec-syntax for Common Lisp.
 
-;This uses `***' as the ellipsis indicator, since Common
-;Lisp won't allow `...' as an identifier.  Change
-					;*schemembe-ellipsis-indicator* if you don't like `***'.
+;;This uses `***' as the ellipsis indicator, since Common
+;;Lisp won't allow `...' as an identifier.  Change
+;;*schemembe-ellipsis-indicator* if you don't like `***'.
 (in-package :stumpwm)
 
 (defconstant *schemembe-ellipsis-indicator* '***)
