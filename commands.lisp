@@ -265,10 +265,10 @@ multiple possible parameter searches, with an example call looking like:
   (run-shell-command "gparted"))
 
 (defcommand darktable () () 
-  (run-raise-or-list "darktable" '(:class "Darktable")))
+  (run-raise-or-pull "darktable" '(:class "Darktable")))
 
 (defcommand gimp () () 
-  (run-raise-or-list "gimp" '(:class "GIMP")))
+  (run-raise-or-pull "gimp" '(:class "GIMP")))
 
 (defcommand pulse-audio () ()
   (run-raise-or-pull "pavucontrol" '(:class "Pavucontrol")))

@@ -14,29 +14,51 @@
 		  :initform nil
 		  :documentation "The for statement, as it was sent in, for use in restarts. ")))
 
-
-
-;; (for (x :in '(0 1 2 3 4 5) :accum-in (acc 0))
-;;   (print x)
-;;   (setf acc (+ acc x)))
-
-;; (for ('(1 2 3 4 5) :as x :accum-in (acc 0))
-;;   (print x)
-;;   (setf acc (+ x acc)))
-
-
 (defmacro for ((thing &key (in nil) (accum-in (gensym))
-			(as nil))
+		      (as nil))
 	       &body body)
-  "this macro creates a for loop, as in c or python or what have you. "
-  (cond ((and as (not in))
+  "this macro creates a for loop, as in c or python or what have you. 
+there are several ways this can be used. please note that :accum-in is optional
+the general usage is 
+;;(for (initialization) (forms))
+
+;; (for (x :in '(1 2 3 4))
+;;   (princ x))
+=> 1234
+;; (for (x :in '(1 2 3 4) :accum-in y;)
+;;   (princ x)
+;;   (setf y (+ y x)))
+=> 1234
+10
+;; (for ('(1 2 3 4) :as m)
+;;   (princ m))
+=> 1234
+;; (for (x :in '(1 2 3 4) :as y :accum-in (z 0))
+;;   (princ x)
+;;   (princ y)
+;;   (princ z)
+;;   (setf z (+ z x y)))
+=> 1102223364412
+20
+;; (for ('1 2 3 4 :accum-in y)
+;;   (if y
+;;       (setf y
+;;       (setf
+;; (for (5) ;; this is not working...
+;;   (princ 0))
+=> 0000
+"
+  (cond ((numberp thing)
+	 `(do ((x 0) (+ x 1))
+	      ((= x ,thing))
+	    ,@body))
+	((and as (not in))
 	 `(let (,accum-in)
 	    (mapcar #'(lambda (,as)
 			,@body)
 		    ,thing)
-	    ,(if (listp accum-in)
-		 (car accum-in)
-		 accum-in)))
+	    ,(when accum-in
+	       accum-in)))
 	((and in (not as))
 	 `(let (,accum-in)
 	    (mapcar #'(lambda (,thing)
@@ -54,11 +76,13 @@
 		    ,in)))
 	(t
 	 `(with-simple-restart (provide-in "proveide a :in variable" x-variable)
-	    
 	    (error 'in-as-error
 		   :neither t :statement-information '(for (,thing ,(when accum-in
 								      accum-in))
 						       ,@body))))))
+
+;; (for (x :in '(1 2 3 4) :as y :accum-in (z 0))
+;;   ())
 
 (defmacro define-keymap (&body bindings)
   "takes a list of bindings, in the form ((kbd \"key\") \"command\")
@@ -314,7 +338,10 @@ and it will open the video in mpv."
 
        ("C-w" . "C-x")
        ("M-w" . "C-c")
-       ("C-y" . "C-v"))
+       ("C-y" . "C-v")
+
+       ;;       ("C-x" . )
+       )
       ("Signal"
        ("C-n" . "Down")
        ("C-p" . "Up")

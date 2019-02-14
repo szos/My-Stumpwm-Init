@@ -42,9 +42,17 @@
 (set-bg-color "#cc3399")
 
 (setf *screen-mode-line-format*
-      (list "^6^B%B^b | %c%t %f | %l| %M | "
-	     "%d
+      (list "^6^B%B^b | "
+	    ;; theres a problem with the formatters for the cpu module,
+	    ;; so were calling the functions explicitly. 
+	    '(:eval (let ((usage (cpu::fmt-cpu-usage)) ;; %c
+			  (temp (cpu::fmt-cpu-temp))   ;; %t
+			  (freq (cpu::fmt-cpu-freq)))  ;; %f
+		      (format nil "~A~A ~A" usage temp freq)))
+	    " | %l| %M | "
+	    "%d
 "
+	    
 	     "%h | %g | %W"))
 
 (setf *window-format* "%n%s%c")

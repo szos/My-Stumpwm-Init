@@ -1,15 +1,17 @@
 (in-package :stumpwm)
 
 (defcommand (sib tile-group) (&key (group (current-group)) (frame (current-frame))
-				   (which-sibling #'car)) ()
+				   ;; (which-sibling #'first)
+				   ) ()
   (let ((sibling (closest-sibling
-	  (list
-	   (tile-group-frame-head group (frame-head group
-						    frame)))
-	  frame)))
+		  (list
+		   (tile-group-frame-head group (frame-head group
+							    frame)))
+		  frame)))
     (if (listp sibling)
-	(focus-frame group (funcall which-sibling sibling))
-	;; (curframe)
+	;; (focus-frame group (funcall which-sibling sibling))
+	;; (message (cdr sibling))
+	(curframe)
 	(focus-frame group sibling))))
 
 ;; (defun remove-split-sibling (tree &optional (group (current-group)))

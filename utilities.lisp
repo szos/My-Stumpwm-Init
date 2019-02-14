@@ -22,9 +22,36 @@
 
 ;;; closures for system functionality
 
-(defmacro format-shell-command (control-string &body format-stuff
-			)
-  `(run-shell-command (format nil ,control-string ,@format-stuff)))
+(defmacro format-shell-command (control-string &body format-stuff)
+  "runs the shell command through format, with"
+  `(run-shell-command (format nil ,control-string ,@(when format-stuff
+						      format-stuff))))
+
+(define-syntax while 
+    (syntax-rules ()
+		  ((while cond body ***)
+		   (loop while cond do body ***))))
+
+(define-syntax c-for
+    (syntax-rules ()
+		  ((c-for bindings test change body ***)
+		   (let bindings
+		     (loop while test
+			do body ***
+			do change)))))
+(defmacro cfor ((bindings test change) &body body)
+  `(let ,bindings
+     (loop while ,test
+	do ,@body
+	  ,change)))
+
+;; (define-syntax my-or
+;;     (syntax-rules ()
+;; 		  ((my-or) nil)
+;; 		  ((my-or arg1) arg1)
+;; 		  ((my-or arg1 arg2) (let ((temp arg1))
+;; 				       (if temp temp arg2)))
+;; 		  ((my-or arg1 arg2 arg3 ***) (my-or (my-or arg1 arg2) arg3 ***))))
 
 (defun replace-newlines-in (string &key (with #\SPACE))
   (loop for character across string
@@ -33,6 +60,12 @@
      finally (return (coerce list 'string))))
 
 (defun format-volume-readout (string)
+  "this loops through string, expecting it to be output from from 
+amixer, piped through egrep to get the left and right levels, formatted like
+so: 
+\"xx%
+xx%\"
+and generates a string fit for messaging to the user."
   (loop with left = '(#\L #\e #\f #\t #\: #\SPACE #\SPACE)
      with right = '(#\R #\i #\g #\h #\t #\: #\SPACE)
      with switch? = nil
@@ -68,8 +101,7 @@
   (let* ((cmd-string
 	  (format nil
 		  "amixer sset Master ~A% | egrep -o \"[0-9]+%\" | egrep \"[0-9]*\"" percentage))
-	 (result (run-shell-command cmd-string t))
-	 )
+	 (result (run-shell-command cmd-string t)))
     (message (format-volume-readout result))))
 
 (defun vol-closure ()
@@ -96,71 +128,6 @@
   (inc-volume amnt))
 (defcommand re-set-volume (&optional amnt) ((:number "set volume to: "))
   (force-volume amnt))
-
-;;; volume closures
-
-(defparameter *volume-percentage* "")
-
-(defun volume-setter-nmax ()
-  "this function generates a closure for controlling volume via the shell 
-command \"pactl set-sink-volume 0\". this closure also interacts with the 
-dynamic variable *volume-percentage*, which is designed to be evaluated in 
-the mode line to show the volume "
-  (run-shell-command "pactl set-sink-volume 0 0%")
-  (let ((max 100) ;; what to consider the maximum
-	(limit 200) ;; the highest value max can be
-	(tracker 0)
-	)
-    (lambda (change &optional (nmax 100 nmax-provided-p))
-      (if (and nmax-provided-p (<= nmax limit)) ;; set a limit to the overdrive 
-	  (setf max nmax)
-	  (cond ((> (+ tracker change) max)
-		 (setf *volume-percentage* "Volume: ^1^B100%^^b^6 ")
-		 (setf tracker max)
-		 (message "Max Volume.  ~D%" tracker)
-		 (sleep .2))
-		((< (+ tracker change) 0)
-		 (run-shell-command "pactl set-sink-volume 0 0%")
-		 (setf *volume-percentage* "Volume: ^2^B0%^^b^6 ")
-		 (message "Min Volume. ~D%" tracker)
-		 (sleep .2))
-		(t
-		 (setf tracker (+ tracker change))
-		 (cond ((< (* (/ tracker max) 100) 10)
-			;; format green and add spaces - less than 10%
-			(setf *volume-percentage* (format nil "Volume: ^2^B  ~D%^^b^6 " (round (* (/ tracker max) 100)))))
-		       ((= (* (/ tracker max) 100) 100) ;; max volume
-			(setf *volume-percentage* (format nil "Volume: ^1^B~D%^^b^6 " (round (* (/ tracker max) 100)))))
-		       ((<= (* (/ tracker max) 100) 50)
-			;;format green
-			(setf *volume-percentage* (format nil "Volume: ^2^B ~D%^^b^6 " (round (* (/ tracker max) 100)))))
-		       ((and (> (* (/ tracker max) 100) 50) (<= (* (/ tracker max) 100) 75))
-			;;format yellow
-			(setf *volume-percentage* (format nil "Volume: ^3^B ~D%^^b^6 " (round (* (/ tracker max) 100)))))
-		       (t
-			;;format red 
-			(setf *volume-percentage* (format nil "Volume: ^1^B ~D%^^b^6 " (round (* (/ tracker max) 100))))))
-		 ;;(run-shell-command (format nil "pactl set-sink-volume 0 +~D%" change))
-		 (format-shell-command "pactl set-sink-volume 0 ~D%" tracker)
-		 (message "Volume: ~D%" tracker)))))))
-
-(defparameter *volume* (volume-setter-nmax))
-
-(defcommand volume-overdrive (nmax) ((:number "New maximum volume (default is 100):  "))
-  (let ((*timeout-wait* 1))
-    (funcall *volume* 0 nmax)
-    (funcall *volume* 0))
-  ;;(funcall *volume* -5)
-  )
-
-(defcommand volume-set (inc) ((:number "enter volume:  "))
-  (let ((*timeout-wait* 1))
-    (setf *volume* (volume-setter-nmax))
-    (funcall *volume* inc)))
-
-(defcommand volume (inc) ((:number "enter the increment:  "))
-  (let ((*timeout-wait* 1))
-    (funcall *volume* inc)))
 
 (defun scrn-temper ()
   (let ((temps '#1=(4500 3000 0  . #1#))
