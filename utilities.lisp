@@ -1,5 +1,24 @@
 (in-package :stumpwm)
 
+(defmacro concat (&rest strings)
+  "just cats the strings sent in."
+  `(concatenate 'string ,@strings))
+
+(defun run-sudo-shell-command (cmd &optional collect-output-p)
+  "takes a command, and creates a one liner for running it as root;
+the one liner:  echo <password> | sudo -S <command>
+this function prompts for the password instead of taking it as an argument 
+in order to avoid exposing the root password in the .lisp file where this 
+function is called. "
+  (let* ((cmd-as-sudo
+	  (concat (format nil "echo ~A | " (read-one-line (current-screen)
+							  "password: "
+							  :password t))
+		  (format nil "sudo -S ~A" cmd))))
+    (if collect-output-p
+	(run-shell-command cmd-as-sudo t)
+	(run-shell-command cmd-as-sudo))))
+
 ;;; pull and raise functions
 
 (defun pull (win &optional (all-groups *run-or-raise-all-groups*))
@@ -21,29 +40,6 @@
 	  (message "Window not in current group, all groups is nil"))))
 
 ;;; closures for system functionality
-
-(defmacro format-shell-command (control-string &body format-stuff)
-  "runs the shell command through format, with"
-  `(run-shell-command (format nil ,control-string ,@(when format-stuff
-						      format-stuff))))
-
-(define-syntax while 
-    (syntax-rules ()
-		  ((while cond body ***)
-		   (loop while cond do body ***))))
-
-(define-syntax c-for
-    (syntax-rules ()
-		  ((c-for bindings test change body ***)
-		   (let bindings
-		     (loop while test
-			do body ***
-			do change)))))
-(defmacro cfor ((bindings test change) &body body)
-  `(let ,bindings
-     (loop while ,test
-	do ,@body
-	  ,change)))
 
 ;; (define-syntax my-or
 ;;     (syntax-rules ()
@@ -129,6 +125,8 @@ and generates a string fit for messaging to the user."
 (defcommand re-set-volume (&optional amnt) ((:number "set volume to: "))
   (force-volume amnt))
 
+;;; manage screen temperature
+
 (defun scrn-temper ()
   (let ((temps '#1=(4500 3000 0  . #1#))
 	(tt 0))
@@ -148,6 +146,8 @@ and generates a string fit for messaging to the user."
   (run-shell-command "redshift -x")
   (unless (= amnt 0)
     (format-shell-command "redshift -O ~D" amnt)))
+
+;;; manage brightness
 
 (defun bright ()
   (run-shell-command "xbacklight -inc 100")
@@ -177,7 +177,20 @@ and generates a string fit for messaging to the user."
   (let ((*timeout-wait* 1))
     (funcall *brightness* val)))
 
+;;; manage vpn via stump menus. 
+
+(defcommand switch-vpn () ()
+  (let ((connection
+	 (second
+	  (select-from-menu (current-screen)
+			    `(("US netflix" "WA#1 udp")
+			      ("Iceland" "IS"))
+			    "Select vpn server to connect to: "))))
+    (run-sudo-shell-command (format nil "protonvpn-cli -c ~A" connection))))
+
 (define-interactive-keymap change-frames (:on-enter #'fnext
-						    :exit-on ((kbd "RET") (kbd "ESC")
-							      (kbd "C-g")))
-  ((kbd "SPC") "fnext"))
+					  :exit-on ((kbd "RET") (kbd "ESC")
+						    (kbd "C-g")))
+  ((kbd "SPC") "fnext")
+  ((kbd "C-SPC") "fnext" ;;t
+   ))
