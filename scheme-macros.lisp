@@ -3,6 +3,8 @@
 ;;April 16, 1998
 ;;v. 0a
 
+;; this file is licensed under the LGPL, as per https://ds26gte.github.io/index.html
+
 ;;Implementation of R5RS-style define-syntax, let-syntax and
 ;;letrec-syntax for Common Lisp.
 

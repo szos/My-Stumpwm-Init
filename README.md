@@ -36,4 +36,4 @@ Contains the commands sib and remove-sibling (and their plumbing). These command
 
 ## scheme-macros.lisp ##
 
-contains an implementation of scheme R5RS macros - specifically define-syntax, let syntax, and letrec-syntax. This was shamelessly taken from https://www.ccs.neu.edu/home/dorai/mbe/mbe-lsp.html as there was no license dictating use of the code. Please thank Dorai Sitaram for the implementation - he is the author. 
+contains an implementation of scheme R5RS macros - specifically define-syntax, let syntax, and letrec-syntax. This was shamelessly taken from https://www.ccs.neu.edu/home/dorai/mbe/mbe-lsp.html as it is licensed under the LGPL, as seen here https://ds26gte.github.io/index.html. Please thank Dorai Sitaram for the implementation - he is the author. 
