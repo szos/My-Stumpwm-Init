@@ -160,9 +160,10 @@ multiple possible parameter searches, with an example call looking like:
 
   ;; wealth advice center. ask about migration.
   ;; direct line is: 503 226 1830
-  (let ((win (fuzzy-finder (if (listp (car props))
+  (let ((win (fuzzy-finder :props (if (listp (car props))
 				    props
-				    `(,props)))))
+				    `(,props))
+			   :all-groups nil)))
     (cond
       ((not win) ;; this means that fuzzy finder was quit by the user. 
        (let ((opt (second (select-from-menu (current-screen) `(("RUN" ,cmd)
@@ -176,9 +177,15 @@ multiple possible parameter searches, with an example call looking like:
      	   (eval cmd)))
       ;; ((or (window-visible-p win) (not (eq (window-group win) (current-group))))
       ;;  (raise win)) ;; this raises the window when it shouldnt. 
-      ((window-visible-p win)
-       (raise win))
       ((not (eq (window-group win) (current-group)))
+       (let ((choice (second (select-from-menu (current-screen) `(("pull" :pull)
+								  ("raise" :raise)
+								  ("quit" nil))))))
+	 (cond ((eq choice :pull)
+		(pull win t))
+	       ((eq choice :raise)
+		(raise win)))))
+      ((window-visible-p win)
        (raise win))
       (t
        (pull win)))))
@@ -190,6 +197,7 @@ multiple possible parameter searches, with an example call looking like:
   "a timer for moving the mouse to keep the screen awake")
 
 (defcommand enable-jiggle () ()
+  "this is for keeping the screen awake, for example when watching a movie"
   (when (timer-p *jiggle-timer*)
     (cancel-timer *jiggle-timer*))
   (setf *jiggle-timer*
@@ -199,6 +207,7 @@ multiple possible parameter searches, with an example call looking like:
   (message "Cursor jiggle enabled"))
 
 (defcommand disable-jiggle () ()
+  "stops the cursor jiggle. "
   (when (timer-p *jiggle-timer*)
     (cancel-timer *jiggle-timer*)
     (message "Cursor jiggle disabled")))
@@ -209,18 +218,11 @@ multiple possible parameter searches, with an example call looking like:
 (defcommand send-string (str) ((:string "string to send: "))
   (window-send-string str))
 
-;;; pull a window
+;;; pull a window to the current group. 
 
-(defcommand pullstr-all (str) ((:string "pull: "))
-  ;; (let* ((*window-format* "%n%s%c => %30t")
-  ;; 	 (win (fuzzy-finder `((:class ,str) (:title ,str) (:role ,str)))))
-  ;;   (when (and win (not (equalp win :not-found)))
-  ;;     (pull win)))
-  (message "pulling ~A" str))
-
-(defcommand pullstr (str) ((:string "pull: "))
+(defcommand pull-to-group (str) ((:string "pull: "))
   (let* ((*window-format* "%n%s%c => %30t")
-	 (win (fuzzy-finder `((:class ,str)))))
+	 (win (fuzzy-finder :props `((:class ,str)) :groups-to-omit (list (current-group)))))
     (when (and win (not (equalp win :not-found)))
       (pull win))))
 
@@ -282,7 +284,7 @@ multiple possible parameter searches, with an example call looking like:
      #'reclassify-window "Newsboat")
    '(:class "Newsboat")))
 
-(defcommand reconnect-vpn (type country) ((:string "Enter parameter to pass (-sc, -cc, etc):  ")
-					  (:string "enter country to connect to:  "))
-  )
+;; (defcommand reconnect-vpn (country) ()
+;;   (format-shell-command "recon ~A" country))
+
 

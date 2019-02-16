@@ -48,7 +48,7 @@ with-open-window function. This takes args the same way as defcommand. You can
 use cwin in the lambda-function-body to reference the window selected. This is 
 an intentional variable capture. This depends on the fuzzy-finder function."
   `(defcommand ,name ,arg-names ,args
-     (if-let ((win (fuzzy-finder '((:class ,class-to-search)))))
+     (if-let ((win (fuzzy-finder :props '((:class ,class-to-search)))))
        ,(if (equal :pull pull?)
 	    '(pull win)
 	    '(focus-all win))
@@ -91,7 +91,7 @@ turns into
  "
   `(defcommand ,name () ()
      ,(if check-for-existing-windows?
-	  `(let ((win (fuzzy-finder '((,with-atribute ,to-search)))))
+	  `(let ((win (fuzzy-finder :props '((,with-atribute ,to-search)))))
 	     (if (eq win :not-found)
 		 (with-open-window ,cmd ,restrictor
 				   #'(lambda (cwin)
@@ -190,7 +190,7 @@ window gets put into. "
 
 (defcommand access-floats () ()
   "looks for windows floated with the (with-open-window... #'float-in-tiles)"
-  (let* ((win (fuzzy-finder '((:class "|FLOAT|")) *window-format* nil nil))
+  (let* ((win (fuzzy-finder :props '((:class "|FLOAT|")) :all-groups nil :all-screens nil))
 	 (action (cadr (select-from-menu (current-screen)
 					 '(;; ("raise" :raise)
 					   ("focus" :focus)

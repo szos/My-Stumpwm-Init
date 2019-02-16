@@ -71,6 +71,7 @@
   (run-shell-command "blueman-applet"))
 
 (load "~/.stumpwm.d/scheme-macros.lisp")
+(load "~/.stumpwm.d/macros.lisp")
 (load "~/.stumpwm.d/utilities.lisp")
 (load "~/.stumpwm.d/keybindings.lisp")
 (load "~/.stumpwm.d/with-open-window.lisp")

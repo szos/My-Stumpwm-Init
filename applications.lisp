@@ -44,6 +44,15 @@ remeber to start the service from sysctl!"
       (run-shell-command "systemctl start i2prouter.service"))
     (run-raise-or-pull "firejail firefox -new-instance -P I2P -url 127.0.0.1:7657/home"
 		       '(:class "Firefox"))))
+(defcommand i2p-stop () ()
+  (let  ((active?
+	 (string=
+	  (run-shell-command "systemctl status i2prouter.service | grep -o \"active (running)\"" t)
+	  "active (running)
+")))
+    (when active?
+      (message "stopping i2p router")
+      (run-shell-command "systemctl stop i2prouter.service"))))
 
 (defcommand firefox-n () ()
   "run firefox"
