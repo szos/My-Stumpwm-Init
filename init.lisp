@@ -3,6 +3,9 @@
 (ql:quickload :stumpbuffer)
 (ql:quickload :clx-truetype)
 (ql:quickload :clx)
+(ql:quickload :cl-diskspace)
+
+;; (defparameter *window-format-length* 20)
 
 (setf *timeout-wait* 5)
 
@@ -10,7 +13,6 @@
 (setf *input-window-gravity* :top-left)
 
 (set-prefix-key (kbd "C-;"))
-
 
 (run-shell-command "setxkbmap no")
 (run-shell-command "xmodmap ~/.stumpwm.d/modmaps/eng-no.modmap")
@@ -26,7 +28,7 @@
 (load-module "end-session")
 
 (load-module "net")
-;; (load-module "disk")
+(load-module "disk")
 (load-module "mem")
 (load-module "cpu")
 (load-module "hostname")
@@ -41,6 +43,25 @@
 (set-border-color "#000000")
 (set-bg-color "#cc3399")
 
+(defun format-diskspace (list-of-disks)
+  (mapcar (lambda (disk)
+	    (let ((disk (getf disk :disk))
+		  ;;(percent (getf disk :use-percent))
+		  (avail (getf disk :available))
+		  (total (getf disk :total)))
+	      (format nil "Disk: \"~A\", ~A free of ~A " disk avail total)))
+	  list-of-disks))
+
+(defparameter *disk-space* (format-diskspace (cl-diskspace::list-all-disk-info t)))
+
+(run-with-timer 0 600 (lambda ()
+			(setf *disk-space*
+			      (format-diskspace (cl-diskspace::list-all-disk-info t)))))
+(defun date-format ()
+  (let* ((full-date (run-shell-command "date" t))
+	 (day ()))
+    ))
+
 (setf *screen-mode-line-format*
       (list "^6^B%B^b | "
 	    ;; theres a problem with the formatters for the cpu module,
@@ -48,12 +69,21 @@
 	    '(:eval (let ((usage (cpu::fmt-cpu-usage)) ;; %c
 			  (temp (cpu::fmt-cpu-temp))   ;; %t
 			  (freq (cpu::fmt-cpu-freq)))  ;; %f
-		      (format nil "~A~A ~A" usage temp freq)))
+		      (format nil "~A~A ~A" usage freq temp)))
 	    " | %l| %M | "
-	    "%d
+	    "%d   "
+	    '(:eval *disk-space*)
+	    "
 "
-	    
-	     "%h | %g | %W"))
+	    "%h | %g | %W"))
+
+
+
+(defun parse-disk (mm)
+  ;; (loop :for (d disk t total f free a available u use-percent) :in mm
+  ;;    collect (format nil "Disk: ~A Usage: ~A% of ~A" disk use-percent total))
+  (let ((x mm))
+    (loop for disk in x)))
 
 (setf *window-format* "%n%s%c")
 (set-unfocus-color (first *colors*))
@@ -82,13 +112,6 @@
 
 (brightness-set 50)
 
-(require :swank)
-(swank-loader:init)
-(handler-case (swank:create-server :port 4006
-				   :style swank:*communication-style*
-				   :dont-close t)
-  (sb-bsd-sockets:address-in-use-error () (message "Swank Already Running")))
-
 (defun renumber-windows (arg)
   "this needs to be a function which takes an arg. I just throw out the arg.
  --experiment: message the argument!"
@@ -100,4 +123,9 @@
 
 (add-hook *destroy-window-hook* 'renumber-windows)
 
-
+(require :swank)
+(swank-loader:init)
+(handler-case (swank:create-server :port 4006
+				   :style swank:*communication-style*
+				   :dont-close t)
+  (sb-bsd-sockets:address-in-use-error () (message "Swank Already Running")))
