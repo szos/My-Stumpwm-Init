@@ -73,15 +73,15 @@ and creates a keymap with them, returning said keymap. "
 ;; C-f") "mesage hi")
 ;; this doesnt work...
 
-(define-key *root-map* (kbd "M-b") "move-focus left")
-(define-key *root-map* (kbd "M-f") "move-focus right")
-(define-key *root-map* (kbd "M-n") "move-focus down")
-(define-key *root-map* (kbd "M-p") "move-focus up")
+(define-key *root-map* (kbd "s-b") "move-focus left")
+(define-key *root-map* (kbd "s-f") "move-focus right")
+(define-key *root-map* (kbd "s-n") "move-focus down")
+(define-key *root-map* (kbd "s-p") "move-focus up")
 
-(define-key *root-map* (kbd "s-p") "exchange-direction up")
-(define-key *root-map* (kbd "s-n") "exchange-direction down")
-(define-key *root-map* (kbd "s-b") "exchange-direction left")
-(define-key *root-map* (kbd "s-f") "exchange-direction right")
+(define-key *root-map* (kbd "M-p") "exchange-direction up")
+(define-key *root-map* (kbd "M-n") "exchange-direction down")
+(define-key *root-map* (kbd "M-b") "exchange-direction left")
+(define-key *root-map* (kbd "M-f") "exchange-direction right")
 
 (define-key *root-map* (kbd "C-f") "move-focus right")
 (define-key *root-map* (kbd "C-b") "move-focus left")
@@ -92,7 +92,8 @@ and creates a keymap with them, returning said keymap. "
 (define-key *root-map* (kbd "r") "remove")
 (define-key *root-map* (kbd "R") "remove-sibling")
 (define-key *root-map* (kbd "M-r") "remove-sibling")
-(define-key *root-map* (kbd "SPC") "change-frames")
+;; (define-key *root-map* (kbd "SPC") "change-frames")
+;; (undefine-key *root-map* (kbd "SPC"))
 (define-key *root-map* (kbd "O") "sib")
 
 (define-key *root-map* (kbd "C-M-f") "gnext")
@@ -100,8 +101,9 @@ and creates a keymap with them, returning said keymap. "
 
 (define-key *root-map* (kbd "C-d") "describe-key")
 (define-key *root-map* (kbd "'") "pull-to-group")
-(define-key *root-map* (kbd ";") "colon")
-(define-key *root-map* (kbd "w") "windowlist")
+(define-key *root-map* (kbd ";") "run-shell-command")
+(define-key *root-map* (kbd "SPC") "colon")
+(define-key *root-map* (kbd "w") "windowlist %m%n%s%50t")
 
 (define-key *root-map* (kbd "M-s-H-h") "ff-focus-search-bar") 
 
@@ -131,7 +133,10 @@ and creates a keymap with them, returning said keymap. "
 
 (define-key *top-map* (kbd "C-F2") "re-set-volume 50")
 (define-key *top-map* (kbd "C-F3") "re-set-volume 100")
-;; (define-key *top-map* (kbd "C-F1") "mute")
+(define-key *top-map* (kbd "C-F1") ;; (lambda ()
+				   ;;   (message "help"))
+  "test-msg"
+  )
 
 ;; (define-key *top-map* (kbd "F1") "volume-set 0")
 ;; (define-key *top-map* (kbd "F2") "volume -5")
@@ -212,51 +217,41 @@ and it will open the video in mpv."
       ;; (message "win: ~A.   url: ~A" curwin (get-x-selection))
       (run-shell-command (format nil "mpv ~A" url)))))
 
+(defparameter *default-remap-keys*
+  '(("C-g" . "ESC")
+    ("C-b" . "Left")
+    ("C-f" . "Right")
+    ("M-b" . "C-Left")
+    ("M-f" . "C-Right")
+    ("C-n" . "Down")
+    ("C-p" . "Up")
+    ("C-a" . "Home")
+    ("C-e" . "End")
+    ("M-v" . "SunPageUp")
+    ("C-v" . "SunPageDown")
+    ("C-d" . "Delete")
+    ("C-k" . ("S-End" "C-c" "DEL"))
+    ("C-w" . "C-x")
+    ("M-w" . "C-c")
+    ("C-y" . "C-v")
+    ("C-s" . "C-f"))
+  "The default keys for remapping. Remember, DEL is backspace, Delete is Delete")
+
 (define-remapped-keys
     `(("Firefox"
-       ("C-g" . "ESC")
-
-       ("C-v" . "SunPageDown")
-       ("M-v" . "SunPageUp")
-       ("M-<" . "Home")
-       ("M->" . "End")
-       
-       ("C-n" . "Down")
-       ("C-p" . "Up")
-       ("C-f" . "Right")
-       ("C-b" . "Left")
-       ("M-f" . "C-Right")
-       ("M-b" . "C-Left")
-       ("M-DEL" . "C-DEL")
-
-       ("C-e" . "End")
-       ("C-a" . "Home")
-
-       ("H-s" . "C-f")
-       ("C-s" . "C-g")
-       ("C-r" . "C-G")
-       ("M-s" . "'")
-       ("M-S" . ("C-;" "M-s-H-h"))
-       
-       ("C-w" . "C-x")
-       ("M-w" . "C-c")
-       ("C-y" . "C-v")
-
-       ("M-F" . "C-TAB")
-       ("M-B" . "C-S-TAB")
-       ("H-b" . "C-S-SunPageUp")
-       ("H-f" . "C-S-SunPageDown")
-
-       ("C-B" . "C-[")
-       ("C-F" . "C-]")
-       
-       ("C-k" . "C-w")
-       ("C-u" . "C-T")
-       ("C-N" . "C-n")
-       ("H-n" . "C-n")
-       ;; ("C-x" . ,(define-keymap
-       ;; 		     ((kbd "u") "meta C-z")))
-       )
+       ,@*default-remap-keys*
+       ("M-F" . "C-SunPageDown")
+       ("M-B" . "C-SunPageUp")
+       ("M-k" . "C-w")
+       ("C-M-f" . "C-]")
+       ("C-M-b" . "C-["))
+      ("I2P"
+       ,@*default-remap-keys*
+       ("M-F" . "C-SunPageDown")
+       ("M-B" . "C-SunPageUp")
+       ("M-k" . "C-w")
+       ("C-M-f" . "C-]")
+       ("C-M-b" . "C-["))
       ("Riot"
        ("C-n" . "Down")
        ("C-p" . "Up")

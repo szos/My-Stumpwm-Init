@@ -42,8 +42,12 @@ remeber to start the service from sysctl!"
     (unless active?
       (message "starting i2p router")
       (run-shell-command "systemctl start i2prouter.service"))
-    (run-raise-or-pull "firejail firefox -new-instance -P I2P -url 127.0.0.1:7657/home"
-		       '(:class "Firefox"))))
+    ;; (run-raise-or-pull "firejail firefox -new-instance -P I2P -url 127.0.0.1:7657/home"
+    ;; 		       '(:class "Firefox"))
+    (run-raise-or-pull (with-open-window "firejail firefox -new-instance -P I2P -url 127.0.0.1:7657/home"
+    			 "Firefox" #'reclassify-window "I2P")
+    		       '(:class "I2P"))))
+
 (defcommand i2p-stop () ()
   (let  ((active?
 	 (string=
@@ -66,36 +70,10 @@ remeber to start the service from sysctl!"
   "run firefox without firejail"
   (run-shell-command "firefox"))
 
-;;; WATERFOX
-(defcommand waterfox () ()
-  "Run or raise or list waterfox"
-  (run-raise-or-pull "firejail waterfox" '((:class "Waterfox"))))
+;;; W3M
 
-(defcommand waterfox-n () ()
-  "run waterfox"
-  (run-shell-command "firejail waterfox"))
-
-(defcommand waterfox-p () ()
-  "run private window"
-  (run-shell-command "firejail waterfox --private-window"))
-
-;;; CONKEROR
-(defcommand conkeror () ()
-  "run conkeror or raise it"
-  (run-raise-or-pull "conkeror" '(:class "Conkeror")))
-
-(defcommand conkeror-n () ()
-  "run a new conkeror instance"
-  (run-shell-command "firejail conkeror"))
-
-;;; ICECAT
-(defcommand icecat () ()
-  "run icecat"
-  (run-raise-or-pull "~/icecat/icecat" '(:class "Icecat")))
-
-(defcommand icecat-n () ()
-  "run new icecat instance"
-  (run-shell-command "firejail ~/icecat/icecat"))
+(defcommand w3m () ()
+  (run-raise-or-pull "xterm -class W3M -e w3m duckduckgo.com" '(:class "W3M")))
 
 ;;;;;;;;;;;;;;;;;;;;;;;
 ;;; EMAIL CHAT & IM ;;;
@@ -140,6 +118,10 @@ remeber to start the service from sysctl!"
   "run mpv with the pseudo-gui frontend"
   (run-raise-or-pull "mpv --player-operation-mode=pseudo-gui" '((:class "mpv"))))
 
+;;; OBS:
+(defcommand obs () ()
+  (run-raise-or-pull "obs" '(:class "obs")))
+
 ;;; ASCII VIDEO PLAYER
 
 ;;;;;;;;;;;;;;
@@ -172,3 +154,10 @@ remeber to start the service from sysctl!"
 
 (defcommand emacs () ()
   (run-raise-or-pull "emacs" '((:class "Emacs"))))
+
+;;;;;;;;;;;;
+;;; MISC ;;;
+;;;;;;;;;;;;
+
+(defcommand deluge () ()
+  (run-raise-or-pull "firejail deluge" '(:class "Deluge")))

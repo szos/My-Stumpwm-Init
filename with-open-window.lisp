@@ -11,7 +11,9 @@
 variable so that with-window-hanger can grab them. it then hangs 
 with-window-hanger on focus-window-hook. then it checks if {cmd} is a string, 
 in which case its a shell command and is run. otherwise its treated as a 
-stumpwm command (or list of commands) and run that way."
+stumpwm command (or list of commands) and run that way.
+example usage:"
+  ;; (with-open-window "firejail firefox" "Firefox" #'reclass "New Class")
   (progn
     (setf (first *with-window*) function)
     (setf (second *with-window*) args)

@@ -11,12 +11,13 @@
 
 (setf *message-window-gravity* :top-left)
 (setf *input-window-gravity* :top-left)
+(setf *mouse-focus-policy* :click)
 
-(set-prefix-key (kbd "C-;"))
+;; (set-prefix-key (kbd "C-;"))
+(set-prefix-key (kbd "s-SPC"))
 
 (run-shell-command "setxkbmap no")
-(run-shell-command "xmodmap ~/.stumpwm.d/modmaps/eng-no.modmap")
-;; (run-shell-command "xmodmap ~/.stumpwm.d/modmaps/eng-altgrn.modmap")
+(run-shell-command "xmodmap ~/.stumpwm.d/modmaps/eng-no-super.modmap")
 (run-shell-command "/usr/lib/notification-daemon-1.0/notification-daemon")
 (run-shell-command "/usr/bin/lxqt-policykit-agent")
 
@@ -34,8 +35,10 @@
 (load-module "hostname")
 (load-module "battery-portable")
 
-(load-module "ttf-fonts")
-(set-font (make-instance 'xft:font :family "Bitstream Vera Sans Mono" :subfamily "Roman" :size 11))
+;; (load-module "ttf-fonts")
+;; (set-font (make-instance 'xft:font :family "Bitstream Vera Sans Mono" :subfamily "Roman" :size 11))
+;; (set-font "-windows-dina-medium-r-normal--13-100-96-96-c-80-iso8859-1")
+(set-font "-xos4-terminus-medium-r-normal--17-120-100-100-c-0-iso10646-1")
 
 (setf *mode-line-timeout* 1)
 
@@ -54,7 +57,7 @@
 
 (defparameter *disk-space* (format-diskspace (cl-diskspace::list-all-disk-info t)))
 
-(run-with-timer 0 600 (lambda ()
+(run-with-timer 0 1000 (lambda ()
 			(setf *disk-space*
 			      (format-diskspace (cl-diskspace::list-all-disk-info t)))))
 (defun date-format ()
@@ -71,19 +74,11 @@
 			  (freq (cpu::fmt-cpu-freq)))  ;; %f
 		      (format nil "~A~A ~A" usage freq temp)))
 	    " | %l| %M | "
-	    "%d   "
+	    "^2^B%d^6^b   "
 	    '(:eval *disk-space*)
 	    "
 "
 	    "%h | %g | %W"))
-
-
-
-(defun parse-disk (mm)
-  ;; (loop :for (d disk t total f free a available u use-percent) :in mm
-  ;;    collect (format nil "Disk: ~A Usage: ~A% of ~A" disk use-percent total))
-  (let ((x mm))
-    (loop for disk in x)))
 
 (setf *window-format* "%n%s%c")
 (set-unfocus-color (first *colors*))

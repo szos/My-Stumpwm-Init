@@ -4,6 +4,27 @@
   "just cats the strings sent in."
   `(concatenate 'string ,@strings))
 
+(defmacro my-when-let* (bindings &body do)
+  (let* ((b1 (gensym))
+	 (g (loop for bind in bindings
+	       collect `(,(first bind)
+			  (or ,(second bind)
+			      (return-from ,b1 (values nil ',(second bind))))))))
+    `(block ,b1
+       (let* ,g
+	 ,@do))))
+
+(defmacro my-if-let* (bindings &body (then &optional else))
+  (let ((b1 (gensym))
+	(b2 (gensym)))
+    `(block ,b1
+       (block ,b2
+	 (let* ,(loop for bind in bindings
+		   collect `(,(car bind) (or ,(second bind)
+					     (return-from ,b2 nil))))
+	   (return-from ,b1 ,then)))
+       ,else)))
+
 (defun run-sudo-shell-command (cmd &optional collect-output-p)
   "takes a command, and creates a one liner for running it as root;
 the one liner:  echo <password> | sudo -S <command>
@@ -108,8 +129,9 @@ and generates a string fit for messaging to the user."
 	  (progn (setf volume-level amnt)
 		 (set-volume amnt))
 	  (let ((newlevel (+ volume-level amnt)))
-	    (setf volume-level newlevel)
-	    (set-volume newlevel))))))
+	    (when (< newlevel 100)
+	      (setf volume-level newlevel)
+	      (set-volume newlevel)))))))
 
 (defparameter *volume-param* (vol-closure))
 
@@ -177,20 +199,10 @@ and generates a string fit for messaging to the user."
   (let ((*timeout-wait* 1))
     (funcall *brightness* val)))
 
-;;; manage vpn via stump menus. 
 
-(defcommand switch-vpn () ()
-  (let ((connection
-	 (second
-	  (select-from-menu (current-screen)
-			    `(("US netflix" "WA#1 udp")
-			      ("Iceland" "IS"))
-			    "Select vpn server to connect to: "))))
-    (run-sudo-shell-command (format nil "protonvpn-cli -c ~A" connection))))
 
 (define-interactive-keymap change-frames (:on-enter #'fnext
-					  :exit-on ((kbd "RET") (kbd "ESC")
-						    (kbd "C-g")))
+						    :exit-on ((kbd "RET") (kbd "ESC")
+							      (kbd "C-g")))
   ((kbd "SPC") "fnext")
-  ((kbd "C-SPC") "fnext" ;;t
-   ))
+  ((kbd "C-SPC") "fnext"))
