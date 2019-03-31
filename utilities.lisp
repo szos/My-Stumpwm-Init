@@ -99,11 +99,16 @@ and generates a string fit for messaging to the user."
 					  right)
 			     'string))))
 
-(defun message-volume (&optional )
+(defun message-volume ()
   (message
    (format-volume-readout
     (run-shell-command
      "amixer get Master | egrep -o \"[0-9]+%\" | egrep \"[0-9]*\"" t))))
+
+(defun fetch-volume ()
+  (let ((amixer-rep
+	 (string-trim) (run-shell-command "amixer get Master | grep -o -P '(?<=\\[).*(?=%)'" t)))
+    (message amixer-rep)))
 
 (defun get-volume ()
   (let* ((amixer-report
@@ -146,6 +151,17 @@ and generates a string fit for messaging to the user."
   (inc-volume amnt))
 (defcommand re-set-volume (&optional amnt) ((:number "set volume to: "))
   (force-volume amnt))
+
+(defun vol-mute ()
+  (let* ((string (run-shell-command
+		  "amixer set Master toggle | grep -o -P '(?<=%\\] \\[).*(?=\\])'" t))
+	 (amix (subseq string 0 2)))
+    (cond ((string= amix "of")
+	   (message "Volume Muted"))
+	  ((string= amix "on")
+	   (message "Volume Unmuted"))
+	  (t
+	   (message "Unknown status, check volume from terminal")))))
 
 ;;; manage screen temperature
 

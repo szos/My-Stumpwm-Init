@@ -46,6 +46,14 @@
 (set-border-color "#000000")
 (set-bg-color "#cc3399")
 
+(defun get-ip-from-proton ()
+  (let ((ip (string-trim '(#\Newline)
+			 (run-shell-command "protonvpn-cli --ip" t))))
+    (setf *current-ip* ip)))
+
+(defparameter *current-ip* nil)
+(defparameter *ip-timer* (run-with-timer 0 120 #'get-ip-from-proton))
+
 (defun format-diskspace (list-of-disks)
   (mapcar (lambda (disk)
 	    (let ((disk (getf disk :disk))
@@ -73,9 +81,12 @@
 			  (temp (cpu::fmt-cpu-temp))   ;; %t
 			  (freq (cpu::fmt-cpu-freq)))  ;; %f
 		      (format nil "~A~A ~A" usage freq temp)))
-	    " | %l| %M | "
-	    "^2^B%d^6^b   "
-	    '(:eval *disk-space*)
+	    " | %lIP: "
+	    '(:eval *current-ip*)
+	    " | %M | "
+	    "^2^B%d^6^b"
+	    ;;'(:eval *disk-space*)
+	    
 	    "
 "
 	    "%h | %g | %W"))

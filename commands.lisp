@@ -182,8 +182,10 @@ is intended to prevent the user from doing anything while the vpn is setting up.
   (let ((connection
 	 (second
 	  (select-from-menu (current-screen)
-			    `(("US netflix" "-c US-WA#1 udp")
+			    `(;; ("US netflix" "-c US-WA#1 udp")
 			      ("Iceland" "-cc IS")
+			      ("Switzerland" "-cc CH")
+			      ("USA" "-cc US")
 			      ;; ("choose" "-c")
 			      )
 			    "Select vpn server to connect to: "))))

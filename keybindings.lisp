@@ -240,6 +240,7 @@ and it will open the video in mpv."
 (define-remapped-keys
     `(("Firefox"
        ,@*default-remap-keys*
+       ("C-K" . "C-w")
        ("M-F" . "C-SunPageDown")
        ("M-B" . "C-SunPageUp")
        ("M-k" . "C-w")
