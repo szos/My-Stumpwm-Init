@@ -1,224 +1,109 @@
 (in-package :stumpwm)
 
-(defmacro concat (&rest strings)
-  "just cats the strings sent in."
-  `(concatenate 'string ,@strings))
+(defmacro with-open-files (((stream filespec &rest options) &rest other-specs)
+			   &body body)
+  `(with-open-file (,stream ,filespec ,@options)
+     ,@(if other-specs
+	   `((with-open-files ,other-specs
+	       ,@body))
+	   body)))
 
-(defmacro my-when-let* (bindings &body do)
-  (let* ((b1 (gensym))
-	 (g (loop for bind in bindings
-	       collect `(,(first bind)
-			  (or ,(second bind)
-			      (return-from ,b1 (values nil ',(second bind))))))))
-    `(block ,b1
-       (let* ,g
-	 ,@do))))
+(defmacro pif (test then &body else)
+  `(if ,test ,then (progn ,@else)))
 
-(defmacro my-if-let* (bindings &body (then &optional else))
-  (let ((b1 (gensym))
-	(b2 (gensym)))
-    `(block ,b1
-       (block ,b2
-	 (let* ,(loop for bind in bindings
-		   collect `(,(car bind) (or ,(second bind)
-					     (return-from ,b2 nil))))
-	   (return-from ,b1 ,then)))
-       ,else)))
+(defun unix-cat (file)
+  (string-trim '(#\newline) 
+	       (with-output-to-string (s)
+		 (with-open-file (stream file)
+		   (loop for l = (read-line stream nil)
+			 until (null l)
+			 do (format s "~a~%" l))))))
 
-(defun run-sudo-shell-command (cmd &optional collect-output-p)
-  "takes a command, and creates a one liner for running it as root;
-the one liner:  echo <password> | sudo -S <command>
-this function prompts for the password instead of taking it as an argument 
-in order to avoid exposing the root password in the .lisp file where this 
-function is called. "
-  (let* ((cmd-as-sudo
-	  (concat (format nil "echo ~A | " (read-one-line (current-screen)
-							  "password: "
-							  :password t))
-		  (format nil "sudo -S ~A" cmd))))
-    (if collect-output-p
-	(run-shell-command cmd-as-sudo t)
-	(run-shell-command cmd-as-sudo))))
+(defun get-memory-usage-percent ()
+  (let (total available)
+    (with-open-file (stream "/proc/meminfo")
+      (block memblock
+	(loop for l = (read-line stream nil)
+	      when (null l)
+		return nil
+	      do (let ((split (cl-ppcre:split ":" l)))
+		   (cond ((string= (car split) "MemTotal")
+			  (setf total
+				(parse-integer
+				 (string-trim '(#\k #\b #\space #\B)
+					      (cadr split)))))
+			 ((string= (car split) "MemAvailable")
+			  (setf available
+				(parse-integer
+				 (string-trim '(#\k #\b #\space #\B)
+					      (cadr split))))))
+		   (when (and total available)
+		     (return-from memblock))))))
+    (* 100 (/ (- total available) total))))
 
-;;; pull and raise functions
+(defun pull-to-group (window &optional (group (current-group)))
+  "pulls window to group and focuses it."
+  (pull-w window group)
+  (group-focus-window group window))
 
-(defun pull (win &optional (all-groups *run-or-raise-all-groups*))
-  "currently only supports pulling from all groups. todo: implement all screens."
-  (if (not (equal (window-group win) (current-group)))
-      (if all-groups
-	 (progn
-	   (move-window-to-group win (current-group))
-	   (pull-window win))
-	 (message "Window is not in the current group, and all-groups is nil."))
-      (pull-window win)))
+(defun run-raise-pull-list (cmd props &key prompt
+					(all-groups *run-or-raise-all-groups*)
+					(all-screens *run-or-raise-all-screens*)
+					(filter-pred *window-menu-filter*)
+					(fmt *window-format*)
+					remove-props)
+  "run-raise-pull-list opens a menu to choose either an existing window matching
+one of the properties pased in with props, or either run the shell command 
+specified by cmd or select a shell command to run if cmd is a list¹. If 
+remove-props is provided any windows matching those properties will be removed 
+from the list. This can be useful when dealing with browsers, for example.
+¹cmd can be formatted one of three ways: as a shell command, as a list of shell
+commands, or as a list of lists of display texts and associated shell commands. 
+examples: 
+\"firefox\", 
+'(\"firefox\" \"palemoon\"), or 
+'((\"Firefox\" \"firefox\")
+  (\"Pale Moon\" \"palemoon\")) "
+  (let ((windows
+	  (flatten
+	   (loop for prop in (if (keywordp (car props)) (list props) props)
+		 collect (find-matching-windows prop all-groups all-screens))))
+	(remove
+	  (flatten
+	   (loop for prop in (if (and remove-props (keywordp (car remove-props)))
+				 (list remove-props) remove-props)
+		 collect (find-matching-windows prop all-groups all-screens)))))
+    (loop for window in remove do (setf windows (remove window windows)))
+    (if (not windows)
+	(if (stringp cmd)
+	    (run-shell-command cmd)
+	    (run-shell-command
+	     (let ((res (select-from-menu (current-screen) cmd "Launch: ")))
+	       (if (= 1 (length res)) (car res) (cadr res)))))
+	(let* ((table  `(("LAUNCH" ,cmd)
+			 ,@(mapcar (lambda (el)
+				     (list (format-expand
+					    *window-formatters* fmt el)
+					   el))
+				   windows)))
+	       (result (second (select-from-menu (current-screen) table prompt
+						 1 nil filter-pred))))
+	  (cond ((not result) '())
+		((stringp result) (run-shell-command result))
+		((listp result)
+		 (run-shell-command
+		  (let ((res (select-from-menu (current-screen) cmd "Launch: ")))
+		    (if (= 1 (length res)) (car res) (cadr res)))))
+		((window-visible-p result)
+		 (if (eq (window-group result) (current-group))
+		     (group-focus-window (current-group) result)
+		     (pull-to-group result)))
+		(t 
+		 (if (eq (window-group result) (current-group))
+		     (group-focus-window (current-group) result)
+		     (pull-to-group result))))))))
 
-(defun raise (win &optional (all-groups *run-or-raise-all-groups*))
-  "raise the window. "
-  (if (equal (window-group win) (current-group))
-      (focus-all win)
-      (if all-groups
-	  (focus-all win)
-	  (message "Window not in current group, all groups is nil"))))
+(defcommand duckduckgo (search) ((:rest "Search: "))
+  (nsubstitute #\+ #\space search)
+  (run-shell-command (concatenate 'string "firefox https://duckduckgo.com/?q=" search)))
 
-;;; closures for system functionality
-
-;; (define-syntax my-or
-;;     (syntax-rules ()
-;; 		  ((my-or) nil)
-;; 		  ((my-or arg1) arg1)
-;; 		  ((my-or arg1 arg2) (let ((temp arg1))
-;; 				       (if temp temp arg2)))
-;; 		  ((my-or arg1 arg2 arg3 ***) (my-or (my-or arg1 arg2) arg3 ***))))
-
-(defun replace-newlines-in (string &key (with #\SPACE))
-  (loop for character across string
-     unless (char= character #\NEWLINE) collect character into list
-     when (char= character #\NEWLINE) collect with into list
-     finally (return (coerce list 'string))))
-
-(defun format-volume-readout (string)
-  "this loops through string, expecting it to be output from from 
-amixer, piped through egrep to get the left and right levels, formatted like
-so: 
-\"xx%
-xx%\"
-and generates a string fit for messaging to the user."
-  (loop with left = '(#\L #\e #\f #\t #\: #\SPACE #\SPACE)
-     with right = '(#\R #\i #\g #\h #\t #\: #\SPACE)
-     with switch? = nil
-     for char across string
-     do (if (char= char #\NEWLINE)
-	    (progn (setf switch? t)
-		   (setf left (append left (list #\SPACE))))
-	    (if switch?
-		(setf right (append right (list char))) ;; right channel
-		(setf left (append left (list char))) ;; left channel
-		))
-     finally (return (coerce (concatenate 'list '(#\V #\o #\l #\u #\m #\e #\: #\SPACE #\SPACE)
-					  left '(#\NEWLINE) '(#\SPACE #\SPACE #\SPACE #\SPACE #\SPACE #\SPACE #\SPACE #\SPACE #\SPACE)
-					  right)
-			     'string))))
-
-(defun message-volume ()
-  (message
-   (format-volume-readout
-    (run-shell-command
-     "amixer get Master | egrep -o \"[0-9]+%\" | egrep \"[0-9]*\"" t))))
-
-(defun fetch-volume ()
-  (let ((amixer-rep
-	 (string-trim) (run-shell-command "amixer get Master | grep -o -P '(?<=\\[).*(?=%)'" t)))
-    (message amixer-rep)))
-
-(defun get-volume ()
-  (let* ((amixer-report
-	  (run-shell-command
-	   "amixer get Master | egrep -o \"[0-9]+%\" | egrep \"[0-9]*\"" t))
-	 (location
-	  (mismatch amixer-report
-		    (replace-newlines-in amixer-report :with #\_))))
-    (parse-integer (subseq amixer-report 0 (- location 1)))))
-
-(defun set-volume (percentage)
-  (let* ((cmd-string
-	  (format nil
-		  "amixer sset Master ~A% | egrep -o \"[0-9]+%\" | egrep \"[0-9]*\"" percentage))
-	 (result (run-shell-command cmd-string t)))
-    (message (format-volume-readout result))))
-
-(defun vol-closure ()
-  (let ((volume-level (get-volume)))
-    (lambda (amnt &optional (set nil))
-      "add amnt to volume level, and use amixer to set to the new volume"
-      (if set
-	  (progn (setf volume-level amnt)
-		 (set-volume amnt))
-	  (let ((newlevel (+ volume-level amnt)))
-	    (when (< newlevel 100)
-	      (setf volume-level newlevel)
-	      (set-volume newlevel)))))))
-
-(defparameter *volume-param* (vol-closure))
-
-(defun inc-volume (amnt)
-  (let ((*timeout-wait* 2))
-    (funcall *volume-param* amnt)))
-(defun force-volume (amnt)
-  (let ((*timeout-wait* 2))
-    (funcall *volume-param* amnt t)))
-
-(defcommand change-volume-by (amnt) ((:number "Level to change volume by: "))
-  (inc-volume amnt))
-(defcommand re-set-volume (&optional amnt) ((:number "set volume to: "))
-  (force-volume amnt))
-
-(defun vol-mute ()
-  (let* ((string (run-shell-command
-		  "amixer set Master toggle | grep -o -P '(?<=%\\] \\[).*(?=\\])'" t))
-	 (amix (subseq string 0 2)))
-    (cond ((string= amix "of")
-	   (message "Volume Muted"))
-	  ((string= amix "on")
-	   (message "Volume Unmuted"))
-	  (t
-	   (message "Unknown status, check volume from terminal")))))
-
-;;; manage screen temperature
-
-(defun scrn-temper ()
-  (let ((temps '#1=(4500 3000 0  . #1#))
-	(tt 0))
-    (lambda ()
-      (setf tt (pop temps))
-      (if (= tt 0)
-	  (format-shell-command "redshift -x")
-	  (format-shell-command "redshift -O ~D" tt)))))
-
-(defparameter *temperature* (scrn-temper))
-
-(defcommand cycle-temperature () ()
-  (funcall *temperature*))
-
-(defcommand redshift (amnt) ((:number "Temp:  "))
-  "depends upon redshift command line utility. "
-  (run-shell-command "redshift -x")
-  (unless (= amnt 0)
-    (format-shell-command "redshift -O ~D" amnt)))
-
-;;; manage brightness
-
-(defun bright ()
-  (run-shell-command "xbacklight -inc 100")
-  (let ((level 100))
-    (lambda (x)
-      (cond ((and (> x 0) (< level 100))
-	     (setf level (+ level x))
-	     (format-shell-command "xbacklight -inc ~A" x)
-	     (message "Brightness: ~A" level))
-	    ((and (< x 0) (> level 0))
-	     (setf level (+ level x))
-	     (format-shell-command "xbacklight -dec ~A" (abs x))
-	     (message "Brightness: ~A" level))
-	    ((= x 0)
-	     (setf level 0)
-	     (format-shell-command "xbacklight -dec 100")))
-      level)))
-
-(defparameter *brightness* (bright))
-
-(defcommand brightness-set (val) ((:number "Enter Brightness Level:  "))
-  (let ((*timeout-wait* 1))
-    (funcall *brightness* 0)
-    (funcall *brightness* val)))
-
-(defcommand brightness-increment (val) ((:number "Enter Brightness Increment:  "))
-  (let ((*timeout-wait* 1))
-    (funcall *brightness* val)))
-
-
-
-(define-interactive-keymap change-frames (:on-enter #'fnext
-						    :exit-on ((kbd "RET") (kbd "ESC")
-							      (kbd "C-g")))
-  ((kbd "SPC") "fnext")
-  ((kbd "C-SPC") "fnext"))
